@@ -4,22 +4,18 @@ pragma solidity ^0.8.11;
 import "@openzeppelin/contracts/access/Ownable.sol";
 // import "contracts/USDb.sol"; // instead of importing the contract, import the interface
 import "contracts/IUSDb.sol";
+import {LinkedListLib} from "contracts/LinkedList.sol";
 
 contract Exchange is Ownable {
     // STORAGE
-    address public tokenA = 0xd9145CCE52D386f254917e481eB44e9943F39138;
-    address public tokenB = 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8;
-    mapping(address => mapping(address => uint256)) deposits; // addr A deposit B token, C many
+    address private tokenA = 0xd9145CCE52D386f254917e481eB44e9943F39138;
+    address private tokenB = 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8;
     mapping(address => uint256) reserves;
+    mapping(address => mapping(address => uint256)) deposits; // addr A deposit B token, C many
     mapping(address => mapping(uint256 => uint256)) sellOrders; // addr A sell for B, C many
     mapping(address => mapping(uint256 => uint256)) buyOrders; // addr A buy for B, C many
 
-    struct Order {
-        address seller;
-        uint256 amount;
-    }
-
-    mapping(address => mapping(uint256 => Order[])) orderBook; // token A, price B, orders[seller, amount]
+    mapping(address => mapping(uint256 => LinkedListLib.LinkedList)) orderBook; // token A, price B, orders[seller, amount]
 
     function deposit(address tokenAddress, uint256 amount)
         private
@@ -93,20 +89,38 @@ contract Exchange is Ownable {
         // check if buy order matches the price
         sellOrders[msg.sender][price] += amount;
 
-        Order memory o;
+        LinkedListLib.Order memory o;
         o.seller = msg.sender;
         o.amount = amount;
-        // priceAndOrders[price].orders.push(o);
-        // can't push to any index
-        orderBook[tokenA][price].push(o);
+
+        // if no node, initHead
+        if (orderBook[tokenA][price].length == 0) {
+            LinkedListLib.initHead(
+                orderBook[tokenA][price],
+                o.seller,
+                o.amount
+            );
+        } else {
+            LinkedListLib.addNode(orderBook[tokenA][price], o.seller, o.amount);
+        }
 
         return true;
     }
 
-    function getSellOrders(uint256 price) public view returns (Order[] memory) {
-        Order[] memory orders = new Order[](orderBook[tokenA][price].length);
-        for (uint8 i = 0; i < orderBook[tokenA][price].length; i++) {
-            orders[i] = orderBook[tokenA][price][i];
+    function getSellOrders(uint256 price)
+        public
+        view
+        returns (LinkedListLib.Order[] memory)
+    {
+        LinkedListLib.Order[] memory orders = new LinkedListLib.Order[](
+            orderBook[tokenA][price].length
+        );
+
+        bytes32 currId = orderBook[tokenA][price].head;
+
+        for (uint256 i = 0; i < orderBook[tokenA][price].length; i++) {
+            orders[i] = orderBook[tokenA][price].nodes[currId].order;
+            currId = orderBook[tokenA][price].nodes[currId].next;
         }
         return orders;
     }
@@ -116,6 +130,7 @@ contract Exchange is Ownable {
         return sellOrders[msg.sender][price];
     }
 
+    // broken
     function deleteSellOrder(uint256 price) public returns (bool) {
         withdraw(tokenA, deposits[msg.sender][tokenA]);
         sellOrders[msg.sender][price] = 0;
@@ -127,39 +142,43 @@ contract Exchange is Ownable {
 
     function newBuyOrder(uint256 price, uint256 amount) public returns (bool) {
         deposit(tokenB, price * amount);
-        buyOrders[msg.sender][price] += price * amount;
+        buyOrders[msg.sender][price] += price * amount; // - [ ] make edits on this
 
-        for (uint8 i = 0; i < orderBook[tokenA][price].length; i++) {
-            uint256 sellAmount = orderBook[tokenA][price][i].amount;
+        uint256 len = orderBook[tokenA][price].length;
+        for (uint8 i = 0; i < len; i++) {
+            bytes32 head_ = orderBook[tokenA][price].head;
+            uint256 sellAmount = orderBook[tokenA][price]
+                .nodes[head_]
+                .order
+                .amount;
 
-            if (sellAmount >= amount) {
-                // full match
-                Order memory o = orderBook[tokenA][price][i];
-                orderBook[tokenA][price][i] = orderBook[tokenA][price][
-                    orderBook[tokenA][price].length - 1
-                ];
-                orderBook[tokenA][price].pop();
+            if (amount == 0) {
+                return true;
+            } else if (sellAmount <= amount) {
+                LinkedListLib.Order memory o = orderBook[tokenA][price]
+                    .nodes[head_]
+                    .order;
+                LinkedListLib.popHead(orderBook[tokenA][price]);
 
-                IUSDb(tokenB).transfer(o.seller, price * amount);
-                deposits[o.seller][tokenA] -= o.amount;
                 reserves[tokenA] -= o.amount;
-            } else if (sellAmount < amount) {
-                // partial match
-                Order memory o = orderBook[tokenA][price][i];
-                orderBook[tokenA][price][i] = orderBook[tokenA][price][
-                    orderBook[tokenA][price].length - 1
-                ];
-                orderBook[tokenA][price].pop();
+                deposits[o.seller][tokenA] -= o.amount;
+                IUSDb(tokenA).transfer(msg.sender, o.amount);
+                IUSDb(tokenB).transfer(o.seller, price * o.amount);
+                amount -= o.amount;
+            } else if (sellAmount > amount) {
+                LinkedListLib.Order memory o = orderBook[tokenA][price]
+                    .nodes[head_]
+                    .order;
+                orderBook[tokenA][price].nodes[head_].order.amount -= amount;
 
-                IUSDb(tokenB).transfer(o.seller, price * sellAmount);
-                deposits[o.seller][tokenA] -= sellAmount;
-                reserves[tokenA] -= sellAmount;
+                reserves[tokenA] -= amount;
+                deposits[o.seller][tokenA] -= amount;
+                IUSDb(tokenA).transfer(msg.sender, amount);
+                IUSDb(tokenB).transfer(o.seller, price * amount);
+                amount = 0;
             } else {
                 // new buy order
             }
-
-            // TODO
-            // - [ ] delete and shift HERE
         }
 
         return true;
