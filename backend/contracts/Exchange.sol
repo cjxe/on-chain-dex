@@ -83,6 +83,7 @@ contract Exchange is Ownable {
         return (reserves[tokenA] / reserves[tokenB]);
     }
 
+    // Sell
     function newSellOrder(uint256 price, uint256 amount) public returns (bool) {
         deposit(tokenA, amount);
         // TODO
@@ -125,8 +126,7 @@ contract Exchange is Ownable {
         return orders;
     }
 
-    // temp func
-    function isActiveSellOrder(uint256 price) public view returns (uint256) {
+    function activeSellOrders(uint256 price) public view returns (uint256) {
         return sellOrders[msg.sender][price];
     }
 
@@ -140,6 +140,7 @@ contract Exchange is Ownable {
         return true;
     }
 
+    // Buy
     function newBuyOrder(uint256 price, uint256 amount) public returns (bool) {
         deposit(tokenB, price * amount);
         buyOrders[msg.sender][price] += price * amount; // - [ ] make edits on this
@@ -155,6 +156,7 @@ contract Exchange is Ownable {
             if (amount == 0) {
                 return true;
             } else if (sellAmount <= amount) {
+                // buy amount >= sell amount
                 LinkedListLib.Order memory o = orderBook[tokenA][price]
                     .nodes[head_]
                     .order;
@@ -176,11 +178,41 @@ contract Exchange is Ownable {
                 IUSDb(tokenA).transfer(msg.sender, amount);
                 IUSDb(tokenB).transfer(o.seller, price * amount);
                 amount = 0;
-            } else {
-                // new buy order
             }
+        }
+        // new buy order
+        if (orderBook[tokenB][price].length == 0) {
+            LinkedListLib.initHead(
+                orderBook[tokenB][price],
+                msg.sender,
+                amount
+            );
+        } else {
+            LinkedListLib.addNode(orderBook[tokenB][price], msg.sender, amount);
         }
 
         return true;
+    }
+
+    function getBuyOrders(uint256 price)
+        public
+        view
+        returns (LinkedListLib.Order[] memory)
+    {
+        LinkedListLib.Order[] memory orders = new LinkedListLib.Order[](
+            orderBook[tokenB][price].length
+        );
+
+        bytes32 currId = orderBook[tokenB][price].head;
+
+        for (uint256 i = 0; i < orderBook[tokenB][price].length; i++) {
+            orders[i] = orderBook[tokenB][price].nodes[currId].order;
+            currId = orderBook[tokenB][price].nodes[currId].next;
+        }
+        return orders;
+    }
+
+    function activeSellOrders(uint256 price) public view returns (uint256) {
+        return sellOrders[msg.sender][price];
     }
 }
