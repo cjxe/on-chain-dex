@@ -10,8 +10,15 @@ contract Exchange is Ownable {
     address private tokenA = 0xd9145CCE52D386f254917e481eB44e9943F39138;
     address private tokenB = 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8;
     mapping(address => mapping(address => uint256)) deposits; // addr A deposit B token, C many
-    mapping(address => bytes32[]) sellOrders; // addr A: [sellOrderIds]
-    mapping(address => bytes32[]) private _buyOrders; // addr A: [buyOrderIds]
+
+    struct OPVnode {
+        bytes32 orderId;
+        uint32 price;
+        uint256 volume;
+    }
+
+    mapping(address => OPVnode[]) private _sellOrders; // addr A: [sellOrderIds] --new--> addr A: [[sellOrderId, price, volume]]
+    mapping(address => OPVnode[]) private _buyOrders; // addr A: [buyOrderIds]
 
     mapping(address => mapping(uint256 => LinkedListLib.LinkedList))
         public orderBook; // token A, price B, orders[seller, amount]
@@ -22,8 +29,8 @@ contract Exchange is Ownable {
         uint256 volume;
     }
 
-    PVnode[] public sellOB; // sell orderbook
-    PVnode[] public buyOB; // buy orderbook
+    PVnode[] private sellOB; // sell orderbook
+    PVnode[] private buyOB; // buy orderbook
 
     function deposit(address tokenAddress, uint256 amount)
         private
@@ -82,24 +89,75 @@ contract Exchange is Ownable {
     }
 
     // Sell
-    function newSellOrder(uint256 price, uint256 amount) public returns (bool) {
-        deposit(tokenA, amount);
-        // TODO
-        // check if buy order matches the price
+    function newSellOrder(
+        uint256 price,
+        uint256 sellAmount,
+        uint256 priceIdx
+    ) public returns (bool) {
+        // get priceIdx using the FE
+        require(
+            buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
+            "Price does not match the index."
+        );
 
-        LinkedListLib.Order memory o;
-        o.seller = msg.sender;
-        o.amount = amount;
+        deposit(tokenA, sellAmount); //sonde koymayi dene
 
-        // if no node, initHead
-        if (orderBook[tokenA][price].length == 0) {
-            LinkedListLib.initHead(
+        uint256 len = orderBook[tokenB][price].length;
+        for (uint8 i = 0; i < len; i++) {
+            bytes32 head_ = orderBook[tokenB][price].head;
+            uint256 buyAmount = orderBook[tokenB][price]
+                .nodes[head_]
+                .order
+                .amount;
+
+            if (sellAmount == 0) {
+                return true;
+            } else if (sellAmount >= buyAmount) {
+                // sell amount >= buy amount
+                LinkedListLib.Order memory o = orderBook[tokenB][price]
+                    .nodes[head_]
+                    .order;
+                LinkedListLib.popHead(orderBook[tokenB][price]);
+                _subVolume(buyOB, priceIdx, price * o.amount);
+
+                deposits[o.seller][tokenB] -= price * o.amount;
+                deposits[msg.sender][tokenA] -= o.amount;
+                IUSDb(tokenB).transfer(msg.sender, price * o.amount);
+                IUSDb(tokenA).transfer(o.seller, o.amount);
+                sellAmount -= o.amount;
+            } else if (buyAmount > sellAmount) {
+                LinkedListLib.Order memory o = orderBook[tokenA][price]
+                    .nodes[head_]
+                    .order;
+                orderBook[tokenB][price].nodes[head_].order.amount -=
+                    price *
+                    sellAmount;
+                _subVolume(buyOB, priceIdx, price * sellAmount);
+
+                deposits[o.seller][tokenB] -= price * sellAmount;
+                deposits[msg.sender][tokenA] -= sellAmount;
+                IUSDb(tokenB).transfer(msg.sender, price * sellAmount);
+                IUSDb(tokenA).transfer(o.seller, sellAmount);
+                sellAmount = 0;
+            }
+        }
+        // new sell order
+        if (orderBook[tokenA][price].length == 0 && sellAmount > 0) {
+            bytes32 orderId = LinkedListLib.initHead(
                 orderBook[tokenA][price],
-                o.seller,
-                o.amount
+                msg.sender,
+                sellAmount
             );
+            _sellOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
+            _addVolume(sellOB, priceIdx, sellAmount);
         } else {
-            LinkedListLib.addNode(orderBook[tokenA][price], o.seller, o.amount);
+            bytes32 orderId = LinkedListLib.addNode(
+                orderBook[tokenA][price],
+                msg.sender,
+                sellAmount
+            );
+            _sellOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
+            _addVolume(sellOB, priceIdx, sellAmount);
         }
 
         return true;
@@ -123,6 +181,17 @@ contract Exchange is Ownable {
         return orders;
     }
 
+    function activeSellOrders() public view returns (bytes32[] memory) {
+        bytes32[] memory sellOrders = new bytes32[](
+            _sellOrders[msg.sender].length
+        );
+
+        for (uint256 i = 0; i < _sellOrders[msg.sender].length; i++) {
+            sellOrders[i] = _sellOrders[msg.sender][i];
+        }
+        return sellOrders;
+    }
+
     // broken
     function deleteSellOrder() public returns (bool) {
         withdraw(tokenA, deposits[msg.sender][tokenA]);
@@ -133,12 +202,12 @@ contract Exchange is Ownable {
     }
 
     // Buy
-    // get buyIdx and sellIdx using the FE
     function newBuyOrder(
         uint256 price,
         uint256 buyAmount,
         uint256 priceIdx
     ) public returns (bool) {
+        // get priceIdx using the FE
         require(
             buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
             "Price does not match the index."
@@ -165,6 +234,7 @@ contract Exchange is Ownable {
                 _subVolume(sellOB, priceIdx, o.amount);
 
                 deposits[o.seller][tokenA] -= o.amount;
+                deposits[msg.sender][tokenB] -= price * o.amount;
                 IUSDb(tokenA).transfer(msg.sender, o.amount);
                 IUSDb(tokenB).transfer(o.seller, price * o.amount);
                 buyAmount -= o.amount;
@@ -176,6 +246,7 @@ contract Exchange is Ownable {
                 _subVolume(sellOB, priceIdx, buyAmount);
 
                 deposits[o.seller][tokenA] -= buyAmount;
+                deposits[msg.sender][tokenB] -= price * buyAmount;
                 IUSDb(tokenA).transfer(msg.sender, buyAmount);
                 IUSDb(tokenB).transfer(o.seller, price * buyAmount);
                 buyAmount = 0;
@@ -187,8 +258,8 @@ contract Exchange is Ownable {
                 orderBook[tokenB][price],
                 msg.sender,
                 price * buyAmount
-            ); // [ ] test this
-            _buyOrders[msg.sender].push(orderId);
+            );
+            _buyOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
             _addVolume(buyOB, priceIdx, price * buyAmount);
         } else if (buyAmount > 0) {
             bytes32 orderId = LinkedListLib.addNode(
@@ -196,7 +267,7 @@ contract Exchange is Ownable {
                 msg.sender,
                 price * buyAmount
             );
-            _buyOrders[msg.sender].push(orderId);
+            _buyOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
             _addVolume(buyOB, priceIdx, price * buyAmount);
         }
 
