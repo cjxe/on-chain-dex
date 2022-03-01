@@ -103,25 +103,26 @@ contract Exchange is Ownable {
             uint256 buyAmount = orderBook[tokenB][price]
                 .nodes[head_]
                 .order
-                .amount;
+                .amount; // do i need to divide by price ???
 
             if (sellAmount == 0) {
                 return true;
-            } else if (sellAmount >= buyAmount) {
+            } else if (price * sellAmount >= buyAmount) {
                 // sell amount >= buy amount
                 LinkedListLib.Order memory o = orderBook[tokenB][price]
                     .nodes[head_]
                     .order;
                 LinkedListLib.popHead(orderBook[tokenB][price]);
-                _subVolume(buyOB, priceIdx, price * o.amount);
+                OPVSetLib._remove(_buyOrders, o.seller, head_); // - [ ] test
+                _subVolume(buyOB, priceIdx, o.amount); // rem'd price*
 
-                deposits[o.seller][tokenB] -= price * o.amount;
-                deposits[msg.sender][tokenA] -= o.amount;
-                IUSDb(tokenB).transfer(msg.sender, price * o.amount);
-                IUSDb(tokenA).transfer(o.seller, o.amount);
-                sellAmount -= o.amount;
-            } else if (buyAmount > sellAmount) {
-                LinkedListLib.Order memory o = orderBook[tokenA][price]
+                deposits[o.seller][tokenB] -= o.amount; // rem'd price*
+                deposits[msg.sender][tokenA] -= o.amount / price;
+                IUSDb(tokenB).transfer(msg.sender, o.amount);
+                IUSDb(tokenA).transfer(o.seller, o.amount / price);
+                sellAmount -= o.amount / price;
+            } else if (buyAmount > price * sellAmount) {
+                LinkedListLib.Order memory o = orderBook[tokenB][price]
                     .nodes[head_]
                     .order;
                 orderBook[tokenB][price].nodes[head_].order.amount -=
@@ -143,19 +144,15 @@ contract Exchange is Ownable {
                 msg.sender,
                 sellAmount
             );
-            _sellOrders._orders[msg.sender].push(
-                OPVSetLib.OPVnode(orderId, price, sellAmount)
-            );
+            OPVSetLib._add(_sellOrders, msg.sender, orderId, price, sellAmount);
             _addVolume(sellOB, priceIdx, sellAmount);
-        } else {
+        } else if (sellAmount > 0) {
             bytes32 orderId = LinkedListLib.addNode(
                 orderBook[tokenA][price],
                 msg.sender,
                 sellAmount
             );
-            _sellOrders._orders[msg.sender].push(
-                OPVSetLib.OPVnode(orderId, price, sellAmount)
-            );
+            OPVSetLib._add(_sellOrders, msg.sender, orderId, price, sellAmount);
             _addVolume(sellOB, priceIdx, sellAmount);
         }
 
@@ -234,6 +231,7 @@ contract Exchange is Ownable {
                     .nodes[head_]
                     .order;
                 LinkedListLib.popHead(orderBook[tokenA][price]);
+                OPVSetLib._remove(_sellOrders, o.seller, head_); // - [ ] test
                 _subVolume(sellOB, priceIdx, o.amount);
 
                 deposits[o.seller][tokenA] -= o.amount;
@@ -263,9 +261,13 @@ contract Exchange is Ownable {
                 msg.sender,
                 price * buyAmount
             );
-            _buyOrders._orders[msg.sender].push(
-                OPVSetLib.OPVnode(orderId, price, price * buyAmount)
-            ); // save index,
+            OPVSetLib._add(
+                _buyOrders,
+                msg.sender,
+                orderId,
+                price,
+                price * buyAmount
+            );
             _addVolume(buyOB, priceIdx, price * buyAmount);
         } else if (buyAmount > 0) {
             bytes32 orderId = LinkedListLib.addNode(
@@ -273,8 +275,12 @@ contract Exchange is Ownable {
                 msg.sender,
                 price * buyAmount
             );
-            _buyOrders._orders[msg.sender].push(
-                OPVSetLib.OPVnode(orderId, price, price * buyAmount)
+            OPVSetLib._add(
+                _buyOrders,
+                msg.sender,
+                orderId,
+                price,
+                price * buyAmount
             );
             _addVolume(buyOB, priceIdx, price * buyAmount);
         }
