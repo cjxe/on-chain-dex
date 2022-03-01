@@ -198,12 +198,27 @@ contract Exchange is Ownable {
         return sellOrders;
     }
 
-    // broken
-    function deleteSellOrder() public returns (bool) {
-        withdraw(tokenA, deposits[msg.sender][tokenA]);
+    function deleteSellOrder(
+        uint32 price,
+        bytes32 orderId,
+        uint256 priceIdx
+    ) public returns (bool) {
+        require(
+            buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
+            "Price does not match the index."
+        );
 
-        // TODO
-        // - [ ] del from `orderBook`
+        LinkedListLib.Order memory o = orderBook[tokenA][price]
+            .nodes[orderId]
+            .order;
+        require(msg.sender == o.seller, "Seller does not match the caller.");
+
+        withdraw(tokenA, o.amount);
+
+        LinkedListLib.deleteNode(orderBook[tokenA][price], orderId);
+        OPVSetLib._remove(_sellOrders, msg.sender, orderId);
+        _subVolume(sellOB, priceIdx, o.amount);
+
         return true;
     }
 
@@ -294,14 +309,27 @@ contract Exchange is Ownable {
         return true;
     }
 
-    function deleteBuyOrder(uint32 price, bytes32 id) public returns (bool) {
-        LinkedListLib.Node memory n = LinkedListLib.getNode(
-            orderBook[tokenB][price],
-            id
+    function deleteBuyOrder(
+        uint32 price,
+        bytes32 orderId,
+        uint256 priceIdx
+    ) public returns (bool) {
+        require(
+            buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
+            "Price does not match the index."
         );
-        require(LinkedListLib.deleteNode(orderBook[tokenB][price], id) == true);
-        //_buyOrders
-        withdraw(tokenB, n.order.amount);
+
+        LinkedListLib.Order memory o = orderBook[tokenB][price]
+            .nodes[orderId]
+            .order;
+        require(msg.sender == o.seller, "Seller does not match the caller.");
+
+        withdraw(tokenB, o.amount);
+
+        LinkedListLib.deleteNode(orderBook[tokenB][price], orderId);
+        OPVSetLib._remove(_buyOrders, msg.sender, orderId);
+        _subVolume(buyOB, priceIdx, o.amount);
+
         return true;
     }
 
@@ -387,8 +415,7 @@ contract Exchange is Ownable {
     }
     // OB functions end here
 
-    // fix deleteBuyOrder
-    // fix deleteSellOrder
+    // move PV functions to a new library
 
     // write factory
     // check paper examples
