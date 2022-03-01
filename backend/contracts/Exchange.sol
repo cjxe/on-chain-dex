@@ -387,9 +387,7 @@ contract Exchange is Ownable {
     }
     // OB functions end here
 
-    // fix newBuyOrder
     // fix deleteBuyOrder
-    // fix newSellOrder
     // fix deleteSellOrder
 
     // write factory

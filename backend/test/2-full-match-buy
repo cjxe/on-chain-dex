@@ -1,16 +1,11 @@
-- run before tests:
-Admin: tokenA: set balance (seller, 10000)
-Admin: tokenA: set balance (buyer, 10000)
-Admin: tokenB: set balance (seller, 10000)
-Admin: tokenB: set balance (buyyer, 10000)
-
-Seller: tokenA: approve (exchangeCA, 10000)
-Buyer: tokenB: approve (exchangeCA, 10000)
-Seller: tokenA: approve (exchangeCA, 10000)
-Buyer: tokenB: approve (exchangeCA, 10000)
-
-
 test case #2
+
+BUY 
+----
+2     <--sell(2)--
+
+full match
+
 initPVnode(50)
 newBuyOrder(50, 2, 0) from 0x5B3...C4
 ETH, balanceOf(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4) == 10000

@@ -1,10 +1,10 @@
-test case #4
+test case #6
 
-BUY   
+BUY    
 ----
-2     <--sell(1)--
+2     <--sell(4)--
 
-partial match
+reverse partial match
 
 initPVnode(50)
 newBuyOrder(50, 2, 0) from 0x5B3...C4
@@ -14,27 +14,27 @@ getPVobs(50) == ([[50,0]], [[50,100]])
 getDeposits(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xd9145CCE52D386f254917e481eB44e9943F39138) == 0
 getDeposits(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8) == 100
 getAllBuyOrders(50) == ([0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 100])
-orderBook(0xd9145CCE52D386f254917e481eB44e9943F39138, 50) == len=0, head=0, tail=0
+orderBook(0xd9145CCE52D386f254917e481eB44e9943F39138, 50) == len=0, head=0, tail=<bytes32>
 orderBook(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8, 50) == len=1, head=<bytes32>, tail=<bytes32>
 activeBuyOrders() == ([<bytes32>, 50, 100])
 
-newSellOrder(50, 1, 0) from 0xAb8...b2
-ETH, balanceOf(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2) == 9999
-USDb, balanceOf(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2) == 10050
-ETH, balanceOf(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4) == 10001
+newSellOrder(50, 4, 0) from 0xAb8...b2
+ETH, balanceOf(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2) == 9996
+USDb, balanceOf(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2) == 10100
+ETH, balanceOf(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4) == 10002
 USDb, balanceOf(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4) == 9900
-getPVobs(50) == ([[50,0]], [[50,50]])
-getDeposits(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0xd9145CCE52D386f254917e481eB44e9943F39138) == 0
+getPVobs(50) == ([[50,2]], [[50,0]])
+getDeposits(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0xd9145CCE52D386f254917e481eB44e9943F39138) == 2
 getDeposits(0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8) == 0
 getDeposits(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xd9145CCE52D386f254917e481eB44e9943F39138) == 0
-getDeposits(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8) == 50
-getAllBuyOrders(50) == ([0x5B38Da6a701c568545dCfcB03FcB875f56beddC4,50])
-getAllSellOrders(50) == ([])
-orderBook(0xd9145CCE52D386f254917e481eB44e9943F39138, 50) == len=0, head=0, tail=<bytes32> 
-orderBook(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8, 50) == len=1, head=<bytes32>, tail=<bytes32>
-activeBuyOrders() == ([<bytes32>,50,50]) from buyer
+getDeposits(0x5B38Da6a701c568545dCfcB03FcB875f56beddC4, 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8) == 0
+getAllBuyOrders(50) == ([])
+getAllSellOrders(50) == ([0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2, 2])
+orderBook(0xd9145CCE52D386f254917e481eB44e9943F39138, 50) == len=1, head=<bytes32>, tail=<bytes32>
+orderBook(0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8, 50) == len=0, head=0, tail=0
+activeBuyOrders() == ([]) from buyer
 activeSellOrders() == ([]) from buyer
 activeBuyOrders() == ([]) from seller
-activeSellOrders() == ([]) from seller
+activeSellOrders() == ([<bytes32>,50,2]) from seller
 
 # PASS

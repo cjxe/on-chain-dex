@@ -1,0 +1,15 @@
+- run before tests:
+deploy ETH.sol
+deploy USDb.sol
+Admin: tokenA: set balance (seller, 10000)
+Admin: tokenA: set balance (buyer, 10000)
+Admin: tokenB: set balance (seller, 10000)
+Admin: tokenB: set balance (buyyer, 10000)
+
+deploy Exchange.sol
+Seller: tokenA: approve (exchangeCA, 10000)
+Buyer: tokenB: approve (exchangeCA, 10000)
+Seller: tokenA: approve (exchangeCA, 10000)
+Buyer: tokenB: approve (exchangeCA, 10000)
+
+

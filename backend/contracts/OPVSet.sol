@@ -68,7 +68,7 @@ library OPVSetLib {
                 // Move the last value to the index where the value to delete is
                 set._orders[userAddress][toDeleteIndex] = lastOPVnode;
                 // Update the index for the moved value
-                set._indexes[orderId] = orderIdIndex; // Replace lastvalue's index to valueIndex
+                set._indexes[lastOPVnode._orderId] = orderIdIndex; // Replace lastvalue's index to valueIndex
             }
 
             // Delete the slot where the moved value was stored
