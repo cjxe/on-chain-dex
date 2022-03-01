@@ -4,6 +4,7 @@ pragma solidity ^0.8.11;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "contracts/IUSDb.sol";
 import {LinkedListLib} from "contracts/LinkedList.sol";
+import {OPVSetLib} from "contracts/OPVSet.sol";
 
 contract Exchange is Ownable {
     // STORAGE
@@ -11,14 +12,8 @@ contract Exchange is Ownable {
     address private tokenB = 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8;
     mapping(address => mapping(address => uint256)) deposits; // addr A deposit B token, C many
 
-    struct OPVnode {
-        bytes32 orderId;
-        uint32 price;
-        uint256 volume;
-    }
-
-    mapping(address => OPVnode[]) private _sellOrders; // addr A: [sellOrderIds] --new--> addr A: [[sellOrderId, price, volume]]
-    mapping(address => OPVnode[]) private _buyOrders; // addr A: [buyOrderIds]
+    OPVSetLib.OPVset private _sellOrders; // addr A: [[sellOrderId, price, volume]]
+    OPVSetLib.OPVset private _buyOrders;
 
     mapping(address => mapping(uint256 => LinkedListLib.LinkedList))
         public orderBook; // token A, price B, orders[seller, amount]
@@ -90,7 +85,7 @@ contract Exchange is Ownable {
 
     // Sell
     function newSellOrder(
-        uint256 price,
+        uint32 price,
         uint256 sellAmount,
         uint256 priceIdx
     ) public returns (bool) {
@@ -148,7 +143,9 @@ contract Exchange is Ownable {
                 msg.sender,
                 sellAmount
             );
-            _sellOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
+            _sellOrders._orders[msg.sender].push(
+                OPVSetLib.OPVnode(orderId, price, sellAmount)
+            );
             _addVolume(sellOB, priceIdx, sellAmount);
         } else {
             bytes32 orderId = LinkedListLib.addNode(
@@ -156,14 +153,16 @@ contract Exchange is Ownable {
                 msg.sender,
                 sellAmount
             );
-            _sellOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
+            _sellOrders._orders[msg.sender].push(
+                OPVSetLib.OPVnode(orderId, price, sellAmount)
+            );
             _addVolume(sellOB, priceIdx, sellAmount);
         }
 
         return true;
     }
 
-    function getAllSellOrders(uint256 price)
+    function getAllSellOrders(uint32 price)
         public
         view
         returns (LinkedListLib.Order[] memory)
@@ -181,13 +180,17 @@ contract Exchange is Ownable {
         return orders;
     }
 
-    function activeSellOrders() public view returns (bytes32[] memory) {
-        bytes32[] memory sellOrders = new bytes32[](
-            _sellOrders[msg.sender].length
+    function activeSellOrders()
+        public
+        view
+        returns (OPVSetLib.OPVnode[] memory)
+    {
+        OPVSetLib.OPVnode[] memory sellOrders = new OPVSetLib.OPVnode[](
+            _sellOrders._orders[msg.sender].length
         );
 
-        for (uint256 i = 0; i < _sellOrders[msg.sender].length; i++) {
-            sellOrders[i] = _sellOrders[msg.sender][i];
+        for (uint256 i = 0; i < _sellOrders._orders[msg.sender].length; i++) {
+            sellOrders[i] = _sellOrders._orders[msg.sender][i];
         }
         return sellOrders;
     }
@@ -203,7 +206,7 @@ contract Exchange is Ownable {
 
     // Buy
     function newBuyOrder(
-        uint256 price,
+        uint32 price,
         uint256 buyAmount,
         uint256 priceIdx
     ) public returns (bool) {
@@ -243,6 +246,7 @@ contract Exchange is Ownable {
                     .nodes[head_]
                     .order;
                 orderBook[tokenA][price].nodes[head_].order.amount -= buyAmount;
+                // _buyOrders modify
                 _subVolume(sellOB, priceIdx, buyAmount);
 
                 deposits[o.seller][tokenA] -= buyAmount;
@@ -259,7 +263,9 @@ contract Exchange is Ownable {
                 msg.sender,
                 price * buyAmount
             );
-            _buyOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
+            _buyOrders._orders[msg.sender].push(
+                OPVSetLib.OPVnode(orderId, price, price * buyAmount)
+            ); // save index,
             _addVolume(buyOB, priceIdx, price * buyAmount);
         } else if (buyAmount > 0) {
             bytes32 orderId = LinkedListLib.addNode(
@@ -267,14 +273,16 @@ contract Exchange is Ownable {
                 msg.sender,
                 price * buyAmount
             );
-            _buyOrders[msg.sender].push(OPVNode(orderId, price, sellAmount));
+            _buyOrders._orders[msg.sender].push(
+                OPVSetLib.OPVnode(orderId, price, price * buyAmount)
+            );
             _addVolume(buyOB, priceIdx, price * buyAmount);
         }
 
         return true;
     }
 
-    function deleteBuyOrder(uint256 price, bytes32 id) public returns (bool) {
+    function deleteBuyOrder(uint32 price, bytes32 id) public returns (bool) {
         LinkedListLib.Node memory n = LinkedListLib.getNode(
             orderBook[tokenB][price],
             id
@@ -285,7 +293,7 @@ contract Exchange is Ownable {
         return true;
     }
 
-    function getAllBuyOrders(uint256 price)
+    function getAllBuyOrders(uint32 price)
         public
         view
         returns (LinkedListLib.Order[] memory)
@@ -303,13 +311,17 @@ contract Exchange is Ownable {
         return orders;
     }
 
-    function activeBuyOrders() public view returns (bytes32[] memory) {
-        bytes32[] memory buyOrders = new bytes32[](
-            _buyOrders[msg.sender].length
+    function activeBuyOrders()
+        public
+        view
+        returns (OPVSetLib.OPVnode[] memory)
+    {
+        OPVSetLib.OPVnode[] memory buyOrders = new OPVSetLib.OPVnode[](
+            _buyOrders._orders[msg.sender].length
         );
 
-        for (uint256 i = 0; i < _buyOrders[msg.sender].length; i++) {
-            buyOrders[i] = _buyOrders[msg.sender][i];
+        for (uint256 i = 0; i < _buyOrders._orders[msg.sender].length; i++) {
+            buyOrders[i] = _buyOrders._orders[msg.sender][i];
         }
         return buyOrders;
     }
