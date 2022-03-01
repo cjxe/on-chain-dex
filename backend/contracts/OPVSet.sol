@@ -15,7 +15,7 @@ library OPVSetLib {
     }
 
     function _contains(OPVset storage set, bytes32 orderId)
-        private
+        internal
         view
         returns (bool)
     {
@@ -27,7 +27,7 @@ library OPVSetLib {
         OPVset storage set,
         address userAddress,
         uint256 index
-    ) private view returns (OPVnode memory) {
+    ) internal view returns (OPVnode memory) {
         return set._orders[userAddress][index];
     }
 
@@ -37,7 +37,7 @@ library OPVSetLib {
         bytes32 orderId,
         uint32 price,
         uint256 volume
-    ) private returns (bool) {
+    ) internal returns (bool) {
         if (!_contains(set, orderId)) {
             set._orders[userAddress].push(OPVnode(orderId, price, volume));
             set._indexes[orderId] = set._orders[userAddress].length;
@@ -53,7 +53,7 @@ library OPVSetLib {
         OPVset storage set,
         address userAddress,
         bytes32 orderId
-    ) private returns (bool) {
+    ) internal returns (bool) {
         uint256 orderIdIndex = set._indexes[orderId];
 
         if (orderIdIndex != 0) {
@@ -88,11 +88,11 @@ library OPVSetLib {
         address userAddress,
         bytes32 orderId,
         uint256 volume
-    ) private returns (bool) {
+    ) internal returns (bool) {
         uint256 orderIdIndex = set._indexes[orderId];
 
         if (orderIdIndex != 0) {
-            set._orders[userAddress][orderIdIndex]._volume += volume;
+            set._orders[userAddress][orderIdIndex - 1]._volume += volume;
             return true;
         } else {
             return false;
@@ -104,11 +104,11 @@ library OPVSetLib {
         address userAddress,
         bytes32 orderId,
         uint256 volume
-    ) private returns (bool) {
+    ) internal returns (bool) {
         uint256 orderIdIndex = set._indexes[orderId];
 
         if (orderIdIndex != 0) {
-            set._orders[userAddress][orderIdIndex]._volume -= volume;
+            set._orders[userAddress][orderIdIndex - 1]._volume -= volume;
             return true;
         } else {
             return false;

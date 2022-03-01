@@ -95,7 +95,7 @@ contract Exchange is Ownable {
             "Price does not match the index."
         );
 
-        deposit(tokenA, sellAmount); //sonde koymayi dene
+        deposit(tokenA, sellAmount);
 
         uint256 len = orderBook[tokenB][price].length;
         for (uint8 i = 0; i < len; i++) {
@@ -113,10 +113,10 @@ contract Exchange is Ownable {
                     .nodes[head_]
                     .order;
                 LinkedListLib.popHead(orderBook[tokenB][price]);
-                OPVSetLib._remove(_buyOrders, o.seller, head_); // - [ ] test
-                _subVolume(buyOB, priceIdx, o.amount); // rem'd price*
+                OPVSetLib._remove(_buyOrders, o.seller, head_);
+                _subVolume(buyOB, priceIdx, o.amount);
 
-                deposits[o.seller][tokenB] -= o.amount; // rem'd price*
+                deposits[o.seller][tokenB] -= o.amount;
                 deposits[msg.sender][tokenA] -= o.amount / price;
                 IUSDb(tokenB).transfer(msg.sender, o.amount);
                 IUSDb(tokenA).transfer(o.seller, o.amount / price);
@@ -128,6 +128,12 @@ contract Exchange is Ownable {
                 orderBook[tokenB][price].nodes[head_].order.amount -=
                     price *
                     sellAmount;
+                OPVSetLib._subVolume(
+                    _buyOrders,
+                    o.seller,
+                    head_,
+                    price * sellAmount
+                ); // - [ ] test
                 _subVolume(buyOB, priceIdx, price * sellAmount);
 
                 deposits[o.seller][tokenB] -= price * sellAmount;
@@ -231,7 +237,7 @@ contract Exchange is Ownable {
                     .nodes[head_]
                     .order;
                 LinkedListLib.popHead(orderBook[tokenA][price]);
-                OPVSetLib._remove(_sellOrders, o.seller, head_); // - [ ] test
+                OPVSetLib._remove(_sellOrders, o.seller, head_);
                 _subVolume(sellOB, priceIdx, o.amount);
 
                 deposits[o.seller][tokenA] -= o.amount;
@@ -244,7 +250,7 @@ contract Exchange is Ownable {
                     .nodes[head_]
                     .order;
                 orderBook[tokenA][price].nodes[head_].order.amount -= buyAmount;
-                // _buyOrders modify
+                OPVSetLib._subVolume(_sellOrders, o.seller, head_, buyAmount); // - [ ] test
                 _subVolume(sellOB, priceIdx, buyAmount);
 
                 deposits[o.seller][tokenA] -= buyAmount;
