@@ -15,7 +15,7 @@ library LinkedListLib {
     struct LinkedList {
         uint256 length;
         bytes32 head;
-        bytes32 prevNodeId;
+        bytes32 tail;
         mapping(bytes32 => LinkedListLib.Node) nodes;
     }
 
@@ -33,7 +33,7 @@ library LinkedListLib {
 
         self.nodes[id] = n;
         self.head = id;
-        self.prevNodeId = id;
+        self.tail = id;
         self.length = 1;
 
         return id;
@@ -66,8 +66,8 @@ library LinkedListLib {
         );
 
         self.nodes[id] = n;
-        self.nodes[self.prevNodeId].next = id;
-        self.prevNodeId = id;
+        self.nodes[self.tail].next = id;
+        self.tail = id;
         self.length += 1;
         return id;
     }
@@ -106,7 +106,7 @@ library LinkedListLib {
                 require(
                     self.nodes[_id].order.seller == msg.sender,
                     "Unauthorised to delete this order."
-                ); // test this
+                );
                 self.nodes[prev].next = self.nodes[curr].next;
                 delete self.nodes[curr];
                 self.length -= 1;
