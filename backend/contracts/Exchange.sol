@@ -9,18 +9,28 @@ import {PVNodeLib} from "contracts/PVNode.sol";
 
 contract Exchange is Ownable {
     // STORAGE
-    address private tokenA = 0xd9145CCE52D386f254917e481eB44e9943F39138;
-    address private tokenB = 0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8;
-    mapping(address => mapping(address => uint256)) deposits; // addr A deposit B token, C many
+    address private tokenA;
+    address private tokenB;
 
-    OPVSetLib.OPVset private _sellOrders; // addr A: [[sellOrderId, price, volume]]
+    constructor(address _tokenA, address _tokenB) {
+        tokenA = _tokenA;
+        tokenB = _tokenB;
+    }
+
+    // addr A deposit B token, C many
+    mapping(address => mapping(address => uint256)) deposits;
+
+    // token A, price B, orders[seller, amount]
+    mapping(address => mapping(uint256 => LinkedListLib.LinkedList))
+        public orderBook;
+
+    // addr A: [[sellOrderId, price, volume]]
+    OPVSetLib.OPVset private _sellOrders;
     OPVSetLib.OPVset private _buyOrders;
 
-    mapping(address => mapping(uint256 => LinkedListLib.LinkedList))
-        public orderBook; // token A, price B, orders[seller, amount]
-
-    PVNodeLib.PVnode[] private sellOB; // sell orderbook. [[price, volume]]
-    PVNodeLib.PVnode[] private buyOB; // buy orderbook
+    // [[price, volume]]
+    PVNodeLib.PVnode[] private sellOB;
+    PVNodeLib.PVnode[] private buyOB;
 
     function deposit(address tokenAddress, uint256 amount)
         private
@@ -28,18 +38,8 @@ contract Exchange is Ownable {
     {
         require(
             tokenAddress == tokenA || tokenAddress == tokenB,
-            "Deposited token is not in the pool."
+            "Deposited token is not in the pool"
         );
-
-        // subtract token amount from depositer => this contract needs to get approved to spend
-        // 1- approve that this contract can use invoker's tokenA/B
-        // approve(address(this), amount); // this doesn't work because right now (with contract Exchange is USDb{...}) we
-        // are making the Exchange contract have all the functions of USDb (making it USDb + anything in the Exchange contract).
-        // In order to access the contract (without adding it to the current contract), we need some sort of API => interface of USDb.
-        // IUSDb(tokenAddress).approve(address(this), 5); // caller is `this` contract, so this line is approving to itself.
-        // Thus, approving must be done by calling the original USDb by us to say `this` contract can spend our USDb
-        //
-        // 2- call `transferFrom()`
         IUSDb(tokenAddress).transferFrom(msg.sender, address(this), amount);
         deposits[msg.sender][tokenAddress] += amount;
         return true;
@@ -51,7 +51,7 @@ contract Exchange is Ownable {
     {
         require(
             tokenAddress == tokenA || tokenAddress == tokenB,
-            "Withdrawn token is not in the pool."
+            "Withdrawn token is not in the pool"
         );
         require(
             deposits[msg.sender][tokenAddress] >= amount,
@@ -63,13 +63,13 @@ contract Exchange is Ownable {
     }
 
     function getDeposits(address account, address tokenAddress)
-        public
+        external
         view
         returns (uint256)
     {
         require(
             tokenAddress == tokenA || tokenAddress == tokenB,
-            "Token is not in the pool."
+            "Token is not in the pool"
         );
         return deposits[account][tokenAddress];
     }
@@ -79,11 +79,11 @@ contract Exchange is Ownable {
         uint32 price,
         uint256 sellAmount,
         uint256 priceIdx
-    ) public returns (bool) {
+    ) external returns (bool) {
         // get priceIdx using the FE
         require(
             buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
-            "Price does not match the index."
+            "Price does not match the index"
         );
 
         deposit(tokenA, sellAmount);
@@ -94,7 +94,7 @@ contract Exchange is Ownable {
             uint256 buyAmount = orderBook[tokenB][price]
                 .nodes[head_]
                 .order
-                .amount; // do i need to divide by price ???
+                .amount;
 
             if (sellAmount == 0) {
                 return true;
@@ -157,7 +157,7 @@ contract Exchange is Ownable {
     }
 
     function getAllSellOrders(uint32 price)
-        public
+        external
         view
         returns (LinkedListLib.Order[] memory)
     {
@@ -175,7 +175,7 @@ contract Exchange is Ownable {
     }
 
     function activeSellOrders()
-        public
+        external
         view
         returns (OPVSetLib.OPVnode[] memory)
     {
@@ -193,16 +193,16 @@ contract Exchange is Ownable {
         uint32 price,
         bytes32 orderId,
         uint256 priceIdx
-    ) public returns (bool) {
+    ) external returns (bool) {
         require(
             buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
-            "Price does not match the index."
+            "Price does not match the index"
         );
 
         LinkedListLib.Order memory o = orderBook[tokenA][price]
             .nodes[orderId]
             .order;
-        require(msg.sender == o.seller, "Seller does not match the caller.");
+        require(msg.sender == o.seller, "Seller does not match the caller");
 
         withdraw(tokenA, o.amount);
 
@@ -218,11 +218,11 @@ contract Exchange is Ownable {
         uint32 price,
         uint256 buyAmount,
         uint256 priceIdx
-    ) public returns (bool) {
+    ) external returns (bool) {
         // get priceIdx using the FE
         require(
             buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
-            "Price does not match the index."
+            "Price does not match the index"
         );
 
         deposit(tokenB, price * buyAmount);
@@ -304,16 +304,16 @@ contract Exchange is Ownable {
         uint32 price,
         bytes32 orderId,
         uint256 priceIdx
-    ) public returns (bool) {
+    ) external returns (bool) {
         require(
             buyOB[priceIdx].price == price && sellOB[priceIdx].price == price,
-            "Price does not match the index."
+            "Price does not match the index"
         );
 
         LinkedListLib.Order memory o = orderBook[tokenB][price]
             .nodes[orderId]
             .order;
-        require(msg.sender == o.seller, "Seller does not match the caller.");
+        require(msg.sender == o.seller, "Seller does not match the caller");
 
         withdraw(tokenB, o.amount);
 
@@ -325,7 +325,7 @@ contract Exchange is Ownable {
     }
 
     function getAllBuyOrders(uint32 price)
-        public
+        external
         view
         returns (LinkedListLib.Order[] memory)
     {
@@ -343,7 +343,7 @@ contract Exchange is Ownable {
     }
 
     function activeBuyOrders()
-        public
+        external
         view
         returns (OPVSetLib.OPVnode[] memory)
     {
@@ -359,7 +359,7 @@ contract Exchange is Ownable {
 
     // sellOB + buyOB functions
     function getPVobs()
-        public
+        external
         view
         returns (PVNodeLib.PVnode[] memory, PVNodeLib.PVnode[] memory)
     {
@@ -376,22 +376,19 @@ contract Exchange is Ownable {
             buyOB.push(PVNodeLib.PVnode(price, 0));
             return buyOB.length - 1;
         }
-        revert("Price already exist in orderbook.");
+        revert("Price already exist in orderbook");
     }
 
-    function getIndexOfPrice(uint32 price) public view returns (uint256) {
+    function getIndexOfPrice(uint32 price) external view returns (uint256) {
         for (uint256 i = 0; i < sellOB.length; i++) {
             if (sellOB[i].price == price) {
                 return i;
             }
         }
-        revert("Price is not in the array.");
+        revert("Price is not in the array");
         // TODO in front-end
         // run this everytime before making new order
         // if this function returns an error, initiate initPVnode(price)
     }
     // sellOB + buyOB functions end here
-
-    // write factory
-    // check paper examples
 }
