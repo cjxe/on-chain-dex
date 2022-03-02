@@ -8,13 +8,14 @@ import {OPVSetLib} from "contracts/OPVSet.sol";
 import {PVNodeLib} from "contracts/PVNode.sol";
 
 contract Exchange is Ownable {
-    // STORAGE
-    address private tokenA;
-    address private tokenB;
+    address public factory;
+    address public tokenA;
+    address public tokenB;
 
     constructor(address _tokenA, address _tokenB) {
         tokenA = _tokenA;
         tokenB = _tokenB;
+        factory = msg.sender;
     }
 
     // addr A deposit B token, C many
@@ -55,7 +56,7 @@ contract Exchange is Ownable {
         );
         require(
             deposits[msg.sender][tokenAddress] >= amount,
-            "Withdraw amount exceeds deposited."
+            "Withdraw amount exceeds deposited"
         );
         IUSDb(tokenAddress).transfer(msg.sender, amount);
         deposits[msg.sender][tokenAddress] -= amount;
