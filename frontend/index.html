@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="./index.css">
+</head>
+  
+<div id="root">
+  <header class="navbar">
+    <div class="navbar-header-wrapper">
+      <a class="navbar-header-selected navbar-header" href="/trade">Trade</a>
+      <a class="navbar-header-not-selected navbar-header" href="/pool">Pool</a>
+    </div>
+    <button class="button-valid button-connect-wallet">Connect wallet</button>
+  </header>
+  <main class="main-wrapper">
+    <div class="container">
+      <div class="flipcard top-bar-item"></div>
+      <div class="flipcard main-item-left">
+        <p class="title-selected">Limit</p>
+        <div class="not-title-wrapper">
+          <div class="top-wrapper">
+            <div class="label-wrapper">
+              <p class="label-user-input">Size</p>
+              <div class="inputs">
+                <div class="input-wrapper" id="eth-inpur-wrapper">
+                  <input type="number" class="user-input-entered" placeholder="0.0000">
+                  <p class="label-currency currency-next-to-size">ETH</p>
+                </div>
+                <div class="input-wrapper">
+                  <input type="number" class="user-input-entered" placeholder="0.0000">
+                  <p class="label-currency currency-next-to-size">USD</p>
+                </div>
+              </div>
+            </div>
+            <div class="label-wrapper">
+              <p class="label-user-input">Limit price</p>
+              <div class="inputs">
+                <div class="input-wrapper">
+                  <input type="number" class="user-input-entered" placeholder="0.0000">
+                  <p class="label-currency currency-next-to-size">USD</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bottom-wrapper">
+            <div class="buy-and-sell-button-wrapper">
+              <button class="buy-button button-valid">Buy ETH</button>
+              <button class="sell-button button-valid">Sell ETH</button>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      <div class="flipcard main-item-right">
+        <p class="title-selected">Orderbook</p>
+
+      </div>
+      <div class="flipcard bottom-main">
+        <p class="title-selected">Active orders</p>
+        <div class="active-orders-table-wrapper">
+          <header class="header header-cell-vertical">
+            <div class="one">Side</div>
+            <div class="two">Price (USD)</div>
+            <div class="three">Size</div>
+            <div class="four">Filled</div>
+            <div class="five">Value (USD)</div>
+            <div class="six">Action</div>
+          </header>
+          <main>
+            <div class="row value-cell-vertical">
+              <div class="buy-side one">BUY</div>
+              <div class="two">3138.2</div>
+              <div class="three">20.135</div>
+              <div class="four">20.134</div>
+              <div class="five">63187.657</div>
+              <div class="six">
+                <button class="sell-price cancel-button">Cancel</button>
+              </div>
+            </div>
+            <div class="row value-cell-vertical">
+              <div class="buy-side one">BUY</div>
+              <div class="two">3138.2</div>
+              <div class="three">20.135</div>
+              <div class="four">20.134</div>
+              <div class="five">63187.657</div>
+              <div class="six">
+                <button class="sell-price cancel-button">Cancel</button>
+              </div>
+            </div>
+            <div class="row value-cell-vertical">
+              <div class="buy-side one">BUY</div>
+              <div class="two">3138.2</div>
+              <div class="three">20.135</div>
+              <div class="four">20.134</div>
+              <div class="five">63187.657</div>
+              <div class="six">
+                <button class="sell-price cancel-button">Cancel</button>
+              </div>
+            </div>
+            <div class="row value-cell-vertical">
+              <div class="buy-side one">BUY</div>
+              <div class="two">3138.2</div>
+              <div class="three">20.135</div>
+              <div class="four">20.134</div>
+              <div class="five">63187.657</div>
+              <div class="six">
+                <button class="sell-price cancel-button">Cancel</button>
+              </div>
+            </div>
+            <div class="row value-cell-vertical">
+              <div class="buy-side one">BUY</div>
+              <div class="two">3138.2</div>
+              <div class="three">20.135</div>
+              <div class="four">20.134</div>
+              <div class="five">63187.657</div>
+              <div class="six">
+                <button class="sell-price cancel-button">Cancel</button>
+              </div>
+            </div>
+          </main>
+          
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</html>
