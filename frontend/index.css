@@ -300,7 +300,48 @@ input[type=number] {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  background-color: var(--color-layer-dark);
 }
+
+.bottom-wrapper .fee-table {
+  display: flex;
+  flex-direction: column;
+  height: 72px;
+  width: auto;
+  background-color: var(--color-layer-dark);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.bottom-wrapper .fee-row-wrapper {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+  width: 100%;
+  height: auto;
+  align-items: center;
+  padding: 0px 12px;
+}
+
+.bottom-wrapper .fee-row-wrapper .fee-row {
+  flex-grow: 1;
+  width: 100%;
+  height: auto;
+}
+
+.bottom-wrapper .fee-row-wrapper .fee-row-header {
+  flex-grow: 1;
+  width: 100%;
+  height: auto;
+}
+
+.bottom-wrapper .fee-row-wrapper .fee-row-value {
+  flex-grow: 1;
+  width: 100%;
+  height: auto;
+  text-align: right;
+}
+
 
 .buy-and-sell-button-wrapper .buy-button {
   height: 40px;
@@ -331,7 +372,6 @@ input[type=number] {
   margin: auto 16px;
 }
 
-
 .bottom-main {
   grid-column-start: 1;
   grid-column-end: 3;
@@ -342,8 +382,6 @@ input[type=number] {
 }
 
 .active-orders-table-wrapper {
-  /* display: flex;
-  flex-direction: column; */
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
@@ -364,8 +402,6 @@ input[type=number] {
   border-radius: 8px;
 }
 
-
-
 .active-orders-table-wrapper > .header {
   display: flex;
   flex-direction: row;
@@ -377,6 +413,7 @@ input[type=number] {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* side */
 .active-orders-table-wrapper .one {
   width: 45px;
   flex-grow: 1;
