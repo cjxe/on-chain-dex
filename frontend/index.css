@@ -26,8 +26,19 @@
   --color-red: #ff5353;
 }
 
+/* scrollbar css trciks: https://stackoverflow.com/a/53221672/12959962 */
 ::-webkit-scrollbar {
-  display: none;
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-layer-lighter);
+  border-radius: 4px;
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 
 html {
@@ -93,8 +104,14 @@ html {
   user-select: none;
 }
 
-.top-bar-value, .value-cell-vertical {
+.top-bar-value {
   font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-light);
+}
+
+.value-cell-vertical {
+  font-size: 13px;
   font-weight: 400;
   color: var(--color-text-light);
 }
@@ -207,7 +224,7 @@ html {
 
 .container {
   height: 100%;
-  width: 800px;
+  width: 760px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 56px 440px 280px;
@@ -230,6 +247,65 @@ html {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.main-item-right > .orderbook-wrapper {
+  width: 100%;
+}
+
+.main-item-right > .orderbook-wrapper > .header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px 24px;
+  min-height: 32px;
+  background-color: var(--color-layer-dark);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.main-item-right > .orderbook-wrapper > .one {
+  flex-grow: 1;
+}
+
+.main-item-right > .orderbook-wrapper .two {
+  flex-grow: 1;
+  text-align: right;
+}
+
+.main-item-right > .orderbook-wrapper > .main > .sell-ob {
+  height: 149px;
+  width: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: auto;
+}
+
+.main-item-right > .orderbook-wrapper > .main .row {
+  padding: 0px 20px 0px 24px;
+  display: flex;
+  justify-content: space-between;
+  min-height: 20px;
+  align-items: center;
+}
+
+.main-item-right > .orderbook-wrapper > .main > .mid-bar {
+  display: flex;
+  align-items: center;
+  padding: 0px 24px;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  height: 32px;
+  width: auto;
+}
+
+.main-item-right > .orderbook-wrapper > .main > .buy-ob {
+  padding-top: 1px;
+  height: 149px;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 }
 
 .flipcard {
@@ -406,7 +482,7 @@ input[type=number] {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0px 24px;
+  padding: 0px 20px 0px 24px;
   min-height: 32px;
   background-color: var(--color-layer-dark);
   border-top: 1px solid var(--color-border);
