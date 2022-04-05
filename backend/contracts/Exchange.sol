@@ -2,20 +2,21 @@
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "contracts/IUSDb.sol";
-import {LinkedListLib} from "contracts/LinkedList.sol";
-import {OPVSetLib} from "contracts/OPVSet.sol";
-import {PVNodeLib} from "contracts/PVNode.sol";
+import "backend/contracts/IUSDb.sol";
+import {LinkedListLib} from "backend/contracts/LinkedList.sol";
+import {OPVSetLib} from "backend/contracts/OPVSet.sol";
+import {PVNodeLib} from "backend/contracts/PVNode.sol";
 
 contract Exchange is Ownable {
     address public factory;
     address public tokenA;
     address public tokenB;
 
-    constructor(address _tokenA, address _tokenB) {
+    constructor(address _tokenA, address _tokenB, address _deployer) {
         tokenA = _tokenA;
         tokenB = _tokenB;
         factory = msg.sender;
+        _transferOwnership(_deployer);
     }
 
     // addr A deposit B token, C many
