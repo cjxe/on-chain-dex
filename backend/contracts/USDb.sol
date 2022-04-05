@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract USDb is Ownable {
     string public constant name = "USD on the Blockcahin";
     string public constant symbol = "USDb";
-    uint8 public constant decimals = 2;
-    uint256 public totalSupply = 100**decimals;
+    uint8 public constant decimals = 6;
+    uint256 public totalSupply = 10000**decimals;
 
     mapping(address => uint256) balances;
     mapping(address => mapping(address => uint256)) allowances; // owner allows contract X to spend Y many tokens
