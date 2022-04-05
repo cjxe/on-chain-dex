@@ -11,12 +11,16 @@ contract Exchange is Ownable {
     address public factory;
     address public tokenA;
     address public tokenB;
+    uint16 public feeRate;
+    uint256 public tokenAaccumulatedFee;
+    uint256 public tokenBaccumulatedFee;
 
     constructor(address _tokenA, address _tokenB, address _deployer) {
         tokenA = _tokenA;
         tokenB = _tokenB;
         factory = msg.sender;
         _transferOwnership(_deployer);
+        feeRate = 999; // 0.1%
     }
 
     // addr A deposit B token, C many
@@ -88,6 +92,9 @@ contract Exchange is Ownable {
             "Price does not match the index"
         );
 
+        // no fee under 1000
+        tokenAaccumulatedFee += (sellAmount * (1000-feeRate)) / 1000;
+        sellAmount -= tokenAaccumulatedFee;
         deposit(tokenA, sellAmount);
 
         uint256 len = orderBook[tokenB][price].length;
@@ -227,6 +234,9 @@ contract Exchange is Ownable {
             "Price does not match the index"
         );
 
+		// no fee under 1000
+        tokenBaccumulatedFee += price * (buyAmount * (1000-feeRate)) / 1000;
+        buyAmount -= (buyAmount * (1000-feeRate)) / 1000;
         deposit(tokenB, price * buyAmount);
 
         uint256 len = orderBook[tokenA][price].length;
@@ -393,4 +403,12 @@ contract Exchange is Ownable {
         // if this function returns an error, initiate initPVnode(price)
     }
     // sellOB + buyOB functions end here
+
+    function collectFees() external onlyOwner returns (bool) {
+        IUSDb(tokenA).transfer(msg.sender, tokenAaccumulatedFee);
+        IUSDb(tokenB).transfer(msg.sender, tokenBaccumulatedFee);
+        tokenAaccumulatedFee = 0;
+        tokenBaccumulatedFee = 0;
+        return true;
+    }
 }
