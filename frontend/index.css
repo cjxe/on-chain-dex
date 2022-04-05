@@ -41,6 +41,16 @@
   background-color: transparent;
 }
 
+button:hover {
+  transition: filter ease 0.2s; 
+  filter: brightness(0.85);
+}
+
+button:active{
+  transition: none; /* disable transition when active */
+  transform: translateY(1px);
+}
+
 html {
   height: 100%;
 }
@@ -233,6 +243,53 @@ html {
 .top-bar-item {
   grid-column-start: 1;
   grid-column-end: 3;
+  display: flex;
+  flex-direction: row;
+}
+
+.top-bar-item > .left {
+  display: flex;
+  flex: 1 1 0%;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.top-bar-item > .left > .pair-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-item > .left > .pair-wrapper > img {
+  height: 25px;
+  width: 25px;
+  margin: 0px 10px 0px 0px;
+}
+
+.top-bar-item > .left > .select-market-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.top-bar-item > .left > .select-market-wrapper > img {
+  height: 22px;
+  width: 22px;
+  margin: 0px 0px 3px 4px;
+  filter: invert(45%) sepia(8%) saturate(863%) hue-rotate(204deg) brightness(94%) contrast(86%);
+}
+
+.top-bar-item > .right {
+  display: flex;
+  flex: 1 1 0%;
+  align-items: center;
+  margin: 0px 16px;
+}
+
+.top-bar-item > .right > .top-bar-item {
+  display: flex;
+  flex-direction: column;
 }
 
 .main-item-left {
@@ -287,6 +344,11 @@ html {
   justify-content: space-between;
   min-height: 20px;
   align-items: center;
+}
+
+.main-item-right > .orderbook-wrapper > .main .row:hover {
+  background-color: var(--color-layer-lightest);
+  border: 2px dashed var(--color-border)
 }
 
 .main-item-right > .orderbook-wrapper > .main > .mid-bar {
@@ -448,6 +510,10 @@ input[type=number] {
   margin: auto 16px;
 }
 
+.navbar-header-wrapper > a:hover {
+  color: var(--color-text-base);
+}
+
 .bottom-main {
   grid-column-start: 1;
   grid-column-end: 3;
@@ -482,7 +548,7 @@ input[type=number] {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0px 20px 0px 24px;
+  padding: 0px 28px 0px 24px;
   min-height: 32px;
   background-color: var(--color-layer-dark);
   border-top: 1px solid var(--color-border);
@@ -507,18 +573,12 @@ input[type=number] {
   flex-grow: 1;
 }
 
-/* filled */
 .active-orders-table-wrapper .four {
-  width: 90px;
+  width: 120px;
   flex-grow: 1;
 }
 
 .active-orders-table-wrapper .five {
-  width: 100px;
-  flex-grow: 1;
-}
-
-.active-orders-table-wrapper .six {
   width: 30px;
   text-align: center; 
   flex-grow: 1;

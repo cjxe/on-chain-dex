@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <link rel="stylesheet" href="./index.css">
+  <script src="index.js" defer></script>
 </head>
   
 <div id="root">
@@ -14,7 +15,24 @@
   </header>
   <main class="main-wrapper">
     <div class="container">
-      <div class="flipcard top-bar-item"></div>
+      <div class="flipcard top-bar-item">
+        <div class="left">
+          <div class="pair-wrapper">
+            <img src="/frontend/img/eth-icon.svg" alt="ethereum icon">
+            <div id="pair" class="user-input-entered">ETH-USD</div>
+          </div>
+          <div class="select-market-wrapper">
+            <div class="top-bar-description">Select a market</div>
+            <img src="/frontend/img/bx-chevron-down.svg" alt="dropdown button">
+          </div>
+        </div>
+        <div class="right">
+          <div class="top-bar-item">
+            <div class="top-bar-description">Oracle price</div>
+            <div class="top-bar-value">$50.03</div>
+          </div>
+        </div>
+      </div>
       <div class="flipcard main-item-left">
         <p class="title-selected">Limit</p>
         <div class="not-title-wrapper">
@@ -161,18 +179,16 @@
             <div class="one">Side</div>
             <div class="two">Price (USD)</div>
             <div class="three">Size</div>
-            <div class="four">Filled</div>
-            <div class="five">Value (USD)</div>
-            <div class="six">Action</div>
+            <div class="four">Value (USD)</div>
+            <div class="five">Action</div>
           </header>
           <main>
             <div class="row value-cell-vertical">
               <div class="buy-side one">BUY</div>
               <div class="two">3138.2</div>
               <div class="three">20.135</div>
-              <div class="four">20.134</div>
-              <div class="five">63187.657</div>
-              <div class="six">
+              <div class="four">63187.657</div>
+              <div class="five">
                 <button class="sell-price cancel-button">Cancel</button>
               </div>
             </div>
@@ -180,9 +196,8 @@
               <div class="buy-side one">BUY</div>
               <div class="two">3138.2</div>
               <div class="three">20.135</div>
-              <div class="four">20.134</div>
-              <div class="five">63187.657</div>
-              <div class="six">
+              <div class="four">63187.657</div>
+              <div class="five">
                 <button class="sell-price cancel-button">Cancel</button>
               </div>
             </div>
@@ -190,9 +205,8 @@
               <div class="buy-side one">BUY</div>
               <div class="two">3138.2</div>
               <div class="three">20.135</div>
-              <div class="four">20.134</div>
-              <div class="five">63187.657</div>
-              <div class="six">
+              <div class="four">63187.657</div>
+              <div class="five">
                 <button class="sell-price cancel-button">Cancel</button>
               </div>
             </div>
@@ -200,9 +214,8 @@
               <div class="buy-side one">BUY</div>
               <div class="two">3138.2</div>
               <div class="three">20.135</div>
-              <div class="four">20.134</div>
-              <div class="five">63187.657</div>
-              <div class="six">
+              <div class="four">63187.657</div>
+              <div class="five">
                 <button class="sell-price cancel-button">Cancel</button>
               </div>
             </div>
@@ -210,14 +223,12 @@
               <div class="buy-side one">BUY</div>
               <div class="two">3138.2</div>
               <div class="three">20.135</div>
-              <div class="four">20.134</div>
-              <div class="five">63187.657</div>
-              <div class="six">
+              <div class="four">63187.657</div>
+              <div class="five">
                 <button class="sell-price cancel-button">Cancel</button>
               </div>
             </div>
           </main>
-          
         </div>
       </div>
     </div>
