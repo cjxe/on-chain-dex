@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract ETH is Ownable {
     string public constant name = "Ethereum";
     string public constant symbol = "ETH";
-    uint8 public constant decimals = 2;
-    uint256 public totalSupply = 100**decimals;
+    uint8 public constant decimals = 6;
+    uint256 public totalSupply = 10000**decimals;
 
     mapping(address => uint256) balances;
     mapping(address => mapping(address => uint256)) allowances; // owner allows contract X to spend Y many tokens
