@@ -16,13 +16,12 @@ connectWalletButton.addEventListener('click', connectWithMetamask);
  */
 async function onLoad() {
   if (typeof window.ethereum !== 'undefined') {
-    console.log('MetaMask is installed!');
+    console.log('MetaMask is installed.');
     provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    const connected = isMetamaskConnected();
+    const connected = await isMetamaskConnected();
     if (connected) {
-      const accounts = await provider.listAccounts();
-      userAddress = accounts[0];
       showAddress();
+      isRinkeby();
     }
   } else {
     alert('Please install MetaMask!');
@@ -39,9 +38,26 @@ async function isMetamaskConnected() {
 }
 
 /**
+ * Checks if MM's network is Rinkeby.
+ * @return {boolean}
+ */
+async function isRinkeby() {
+  const network = await provider.getNetwork();
+  if (network.chainId != 4) {
+    alert('Please switch the nework to "Rinkeby".')
+    return false;
+  }
+  return true;
+}
+
+/**
  * Launches a MetaMask popup to allow users to connect their wallet.
  */
 async function connectWithMetamask() {
+  const connectedToRinkeby = await isRinkeby();
+  if (!connectedToRinkeby) {
+    return false;
+  }
   const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
   userAddress = accounts[0];
   showAddress();
@@ -50,7 +66,9 @@ async function connectWithMetamask() {
 /**
  * Replaces the text of "Connect wallet" to user's address.
  */
-function showAddress() {
+async function showAddress() {
+  const accounts = await provider.listAccounts();
+  userAddress = accounts[0];
   connectWalletButton.innerHTML = userAddress.slice(0, 4) + '...' + userAddress.slice(userAddress.length - 5, userAddress.length - 1);
 }
 
