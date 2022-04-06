@@ -42,11 +42,11 @@
               <p class="label-user-input">Size</p>
               <div class="inputs">
                 <div class="input-wrapper" id="eth-inpur-wrapper">
-                  <input type="number" class="user-input-entered" placeholder="0.0000">
+                  <input id="eth-size" type="number" class="user-input-entered" placeholder="0.0000">
                   <p class="label-currency currency-next-to-size">ETH</p>
                 </div>
                 <div class="input-wrapper">
-                  <input type="number" class="user-input-entered" placeholder="0.0000">
+                  <input id="usd-size" type="number" class="user-input-entered" placeholder="0.0000">
                   <p class="label-currency currency-next-to-size">USD</p>
                 </div>
               </div>
@@ -55,7 +55,7 @@
               <p class="label-user-input">Limit price</p>
               <div class="inputs">
                 <div class="input-wrapper">
-                  <input type="number" class="user-input-entered" placeholder="0.0000">
+                  <input id="limit-price" type="number" class="user-input-entered" placeholder="0.0000">
                   <p class="label-currency currency-next-to-size">USD</p>
                 </div>
               </div>
@@ -64,17 +64,17 @@
           <div class="bottom-wrapper">
             <div class="fee-table">
               <div class="fee-row-wrapper">
-                <div class="header-cell-vertical fee-row-header">Fee</div>
-                <div id="fee-value" class="value-cell-vertical fee-row-value">-</div>
+                <div class="header-cell-vertical fee-row-header">Fee (0.1%)</div>
+                <div id="fee-value" class="value-cell-vertical fee-row-value">Hover on a button</div>
               </div>
               <div class="fee-row-wrapper">
                 <div class="header-cell-vertical fee-row-header">Total</div>
-                <div id="total-fee-value" class="value-cell-vertical fee-row-value">-</div>
+                <div id="total-value" class="value-cell-vertical fee-row-value">-</div>
               </div>
             </div>
             <div class="buy-and-sell-button-wrapper">
-              <button class="buy-button button-valid">Buy ETH</button>
-              <button class="sell-button button-valid">Sell ETH</button>
+              <button id="buy-button" class="buy-button button-valid">Buy ETH</button>
+              <button id="sell-button" class="sell-button button-valid">Sell ETH</button>
             </div>
             
           </div>
