@@ -2,7 +2,7 @@
 let userAddress;
 let provider;
 let inputFlag;
-let ExchangeCAddress;
+let ExchangeContract;
 let ExchangeABI;
 
 // Elements
@@ -45,7 +45,7 @@ async function onLoad() {
 
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
       ExchangeABI = await ExchangeABI.json();
-      ExchangeCAddress = new ethers.Contract('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', ExchangeABI, provider);
+      ExchangeContract = new ethers.Contract('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', ExchangeABI, provider);
 
       // TODO
       // - [ ] check if tokenA is approved. If not: change button to approve tokenA
@@ -55,13 +55,13 @@ async function onLoad() {
 
     provider.on('block', async (blockNumber) => {
       console.log(blockNumber);
-      updateBlockNumber(blockNumber);
+      // updateBlockNumber(blockNumber);
 
       // fetch and update the order book (OB)
       let orderbooks = await fetchOB();
       updateOB(orderbooks[0], orderbooks[1]);
 
-      // fetch active orders
+      updateActiveOrders();
       
       // update price oracle
     });
@@ -217,7 +217,7 @@ function updateBlockNumber(blockNumber) {
  * Fetches `sellOB` and `buyOB` using the Exchange contract.
  */
 async function fetchOB() {
-  const orderbooks = await ExchangeCAddress.getPVobs();
+  const orderbooks = await ExchangeContract.getPVobs();
   return orderbooks;
 }
 
@@ -238,7 +238,7 @@ function initOBRow(price, orderSize) {
   let orderSizeDiv = document.createElement("div");
   orderSizeDiv.classList.add('order-size')
   orderSize = orderSize/1000000
-  orderSizeDiv.innerHTML = Math.round(orderSize * 1000)/1000;
+  orderSizeDiv.innerHTML = orderSize.toFixed(3);
 
   rowDiv.appendChild(priceDiv);
   rowDiv.appendChild(orderSizeDiv);
@@ -294,7 +294,7 @@ function updateOB(sellOB, buyOB) {
   let highestBuyPrice = -Number.MAX_VALUE;
 
   for (let i=0; i<sellOB.length; i++) {
-    if (sellOB[i][1] > 0) { // TODO, test this!
+    if (sellOB[i][1] > 0) {
       sellOBDiv.appendChild(initOBRow(sellOB[i][0], sellOB[i][1]));
       // update lowestPrice
       if (lowestSellPrice > sellOB[i][0]) {
@@ -319,4 +319,83 @@ function updateOB(sellOB, buyOB) {
   const parentDiv = obTable.parentNode;
 
   parentDiv.replaceChild(OBDiv, obTable);
+}
+
+/**
+ * Creates an buy-row that has a side (BUY/SELL), Price (USD), Size (ETH), 
+ * Total value (USD) and an action to cancel the order.
+ * @param {Array} order: [txHash, price, size]
+ * @param {String} side: 'buy' or 'sell'
+ * @returns {Element}: A <div> that is a buy-row.
+ */
+async function initActiveOrderRow(order, side) {
+  let rowDiv = document.createElement("div");
+  rowDiv.classList.add('row', 'value-cell-vertical');
+
+  let sideDiv = document.createElement("div");
+  if (side == 'buy') {
+    sideDiv.classList.add('buy-side', 'one');
+    sideDiv.innerHTML = 'BUY';
+  } else if (side == 'sell') {
+    sideDiv.classList.add('sell-side', 'one');
+    sideDiv.innerHTML = 'SELL';
+  }
+
+  let priceDiv = document.createElement("div");
+  priceDiv.classList.add('two');
+  const price = (order[1]/100).toFixed(2);
+  priceDiv.innerHTML = price;
+
+  let sizeDiv = document.createElement("div");
+  sizeDiv.classList.add('three');
+  const size = (parseInt(order[2]._hex, 16)/1000000).toFixed(3);
+  sizeDiv.innerHTML = size;
+
+  let valueDiv = document.createElement("div");
+  valueDiv.classList.add('four');
+  valueDiv.innerHTML = (price * size).toFixed(2);
+
+  let actionDiv = document.createElement("div");
+  actionDiv.classList.add('five');
+
+  // TODO
+  // add functionality (tx data (data[0])) to cancel
+  let cancelButton = document.createElement("button");
+  cancelButton.classList.add('sell-price', 'cancel-button');
+  cancelButton.innerHTML = 'Cancel';
+  actionDiv.appendChild(cancelButton);
+
+  rowDiv.appendChild(sideDiv);
+  rowDiv.appendChild(priceDiv);
+  rowDiv.appendChild(sizeDiv);
+  rowDiv.appendChild(valueDiv);
+  rowDiv.appendChild(actionDiv);
+
+  return rowDiv;
+}
+
+/**
+ * Updates 'active orders' by creating new rows and replacing the current 
+ * table with the newly created one.
+ */
+async function updateActiveOrders() {
+  const activeBuyOrders = await ExchangeContract.activeBuyOrders({from:userAddress});
+  const activeSellOrders = await ExchangeContract.activeSellOrders({from:userAddress});
+
+  // init main component
+  let mainDiv = document.createElement("div");
+  mainDiv.id = 'active-orders-main';
+
+  for (let i=0; i<activeBuyOrders.length; i++) {
+    mainDiv.appendChild(await initActiveOrderRow(activeBuyOrders[i], 'buy'));
+  }
+
+  for (let i=0; i<activeSellOrders.length; i++) {
+    mainDiv.appendChild(await initActiveOrderRow(activeSellOrders[i], 'sell'));
+  }
+
+  let currentTable = document.getElementById('active-orders-main');
+  const parentDiv = currentTable.parentNode;
+
+  parentDiv.replaceChild(mainDiv, currentTable);
 }
