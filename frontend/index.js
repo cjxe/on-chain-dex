@@ -78,7 +78,10 @@ async function onLoad() {
     provider.on('block', async (blockNumber) => {
       console.log(blockNumber);
       updateBlockNumber(blockNumber);
-      if (!connected) return false;
+      if (!connected) {
+        disableUserInput();
+        return false;
+      }
 
       // fetch and update the order book (OB)
       let orderbooks = await fetchOB();
@@ -496,4 +499,20 @@ async function approveETH() {
     sellButton.innerHTML = 'Sell ETH';
     sellButton.removeEventListener('click', approveETH);
   }
+}
+
+/**
+ * Fires when wallet is not connected. 
+ * Disables: input, button
+ */
+function disableUserInput() {
+  var buttons = document.getElementsByTagName("button");
+  for (var i = 0; i < buttons.length; i++) {
+    buttons[i].disabled = true;
+  }
+  connectWalletButton.disabled = false;
+  ethSize.disabled = true;
+  usdSize.disabled = true;
+  limitPrice.disabled = true;
+  feeValue.innerHTML = '-';
 }

@@ -52,6 +52,22 @@ button:active{
   transform: translateY(1px);
 }
 
+button:disabled {
+  opacity: 0.40;
+}
+
+button[disabled]:hover {
+  cursor: not-allowed;
+}
+
+input:disabled {
+  opacity: 0.40;
+}
+
+input[disabled]:hover {
+  cursor: not-allowed;
+}
+
 html {
   height: 100%;
 }
