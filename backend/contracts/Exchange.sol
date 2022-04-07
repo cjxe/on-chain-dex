@@ -93,9 +93,10 @@ contract Exchange is Ownable {
         );
 
         // no fee under 1000
-        tokenAaccumulatedFee += (sellAmount * (1000-feeRate)) / 1000;
-        sellAmount -= tokenAaccumulatedFee;
         deposit(tokenA, sellAmount);
+        tokenAaccumulatedFee += (sellAmount * (1000-feeRate)) / 1000;
+        deposits[msg.sender][tokenA] -= tokenAaccumulatedFee;
+        sellAmount -= tokenAaccumulatedFee;
 
         uint256 len = orderBook[tokenB][price].length;
         for (uint8 i = 0; i < len; i++) {
@@ -235,9 +236,10 @@ contract Exchange is Ownable {
         );
 
 		// no fee under 1000
-        tokenBaccumulatedFee += price * (buyAmount * (1000-feeRate)) / 1000;
-        buyAmount -= (buyAmount * (1000-feeRate)) / 1000;
         deposit(tokenB, price * buyAmount);
+        tokenBaccumulatedFee += price * (buyAmount * (1000-feeRate)) / 1000;
+        deposits[msg.sender][tokenB] -= tokenAaccumulatedFee;
+        buyAmount -= (buyAmount * (1000-feeRate)) / 1000;
 
         uint256 len = orderBook[tokenA][price].length;
         for (uint8 i = 0; i < len; i++) {
