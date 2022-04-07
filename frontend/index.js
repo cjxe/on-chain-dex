@@ -1,9 +1,8 @@
 // Variables
-let userAddress;
-let provider;
+let userAddress, provider;
 let inputFlag;
-let ExchangeContract;
-let ExchangeABI;
+let ExchangeABI, ExchangeContract;
+let AggregatorV3InterfaceABI, EthereumPriceOracleContract;
 
 // Elements
 const connectWalletButton = document.getElementById("button-connect-wallet");
@@ -43,9 +42,15 @@ async function onLoad() {
       showAddress();
       isRinkeby();
 
+      // init Exchange contract
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
       ExchangeABI = await ExchangeABI.json();
       ExchangeContract = new ethers.Contract('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', ExchangeABI, provider);
+
+      // init Price oracle contract
+      AggregatorV3InterfaceABI = await fetch('./abi/AggregatorV3Interface_ABI.json');
+      AggregatorV3InterfaceABI = await AggregatorV3InterfaceABI.json();
+      EthereumPriceOracleContract = new ethers.Contract('0x8A753747A1Fa494EC906cE90E9f37563A8AF630e', AggregatorV3InterfaceABI, provider);
 
       // TODO
       // - [ ] check if tokenA is approved. If not: change button to approve tokenA
@@ -55,15 +60,13 @@ async function onLoad() {
 
     provider.on('block', async (blockNumber) => {
       console.log(blockNumber);
-      // updateBlockNumber(blockNumber);
+      updateBlockNumber(blockNumber);
 
       // fetch and update the order book (OB)
       let orderbooks = await fetchOB();
       updateOB(orderbooks[0], orderbooks[1]);
-
       updateActiveOrders();
-      
-      // update price oracle
+      updatePriceOracle();
     });
 
 
@@ -398,4 +401,13 @@ async function updateActiveOrders() {
   const parentDiv = currentTable.parentNode;
 
   parentDiv.replaceChild(mainDiv, currentTable);
+}
+
+/**
+ * Updates the price oracle using 'Chainlik Ethereum Data Feeds':
+ * https://docs.chain.link/docs/ethereum-addresses/
+ */
+async function updatePriceOracle() {
+  const priceOracleValue = document.getElementById('price-oracle-value');
+  priceOracleValue.innerHTML = '$' + (parseInt((await EthereumPriceOracleContract.latestAnswer())._hex, 16)/100000000).toFixed(2);
 }
