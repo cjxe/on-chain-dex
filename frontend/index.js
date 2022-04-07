@@ -27,8 +27,10 @@ usdSize.addEventListener('input', usdInputHandler);
 limitPrice.addEventListener('input', limitInputHandler);
 buyButton.addEventListener('mouseover', buyMouseoverHandler);
 buyButton.addEventListener('mouseleave', buyMouseleaveHandler);
+buyButton.addEventListener('click', buyHandler);
 sellButton.addEventListener('mouseover', sellMouseoverHandler);
 sellButton.addEventListener('mouseleave', sellMouseleaveHandler);
+sellButton.addEventListener('click', sellHandler);
 ethereum.on('accountsChanged', () => location.reload());
 
 
@@ -52,6 +54,7 @@ async function onLoad() {
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
       ExchangeABI = await ExchangeABI.json();
       ExchangeContract = new ethers.Contract('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', ExchangeABI, provider);
+      ExchangeContractWithSigner = ExchangeContract.connect(signer);
 
       // init Price oracle contract
       AggregatorV3InterfaceABI = await fetch('./abi/AggregatorV3Interface_ABI.json');
@@ -191,7 +194,7 @@ function limitInputHandler() {
  */
 function buyMouseoverHandler() {
   if (Number(limitPrice.value) > 0 && (Number(ethSize.value) > 0)) {
-    const fee = Math.round(usdSize.value * 1)/100;
+    const fee = Math.round(usdSize.value * 1)/1000;
     const total = usdSize.value - fee;
     feeValue.innerHTML = fee.toLocaleString() + ' USD';
     totalValue.innerHTML = total.toLocaleString() + ' USD';
@@ -204,10 +207,10 @@ function buyMouseoverHandler() {
  */
 function sellMouseoverHandler() {
   if (Number(limitPrice.value) > 0 && (Number(ethSize.value) > 0)) {
-    const fee = Math.round(ethSize.value * 1)/1000;
+    const fee = (ethSize.value * 1)/1000;
     const total = ethSize.value - fee;
-    feeValue.innerHTML = fee.toLocaleString() + ' ETH';
-    totalValue.innerHTML = total.toLocaleString() + ' ETH';
+    feeValue.innerHTML = fee + ' ETH';
+    totalValue.innerHTML = total + ' ETH';
   }
 }
 
@@ -251,7 +254,7 @@ async function fetchOB() {
  * @param {Number} orderSize: The corresponding order size for a price.
  * @returns {Element}: A <div> that is a row.
  */
-function initOBRow(price, orderSize) {
+function initOBRow(price, orderSize, side) {
   let rowDiv = document.createElement("div");
   rowDiv.classList.add('row');
 
@@ -260,10 +263,14 @@ function initOBRow(price, orderSize) {
   priceDiv.innerHTML = (price/100).toFixed(2);
 
   let orderSizeDiv = document.createElement("div");
-  orderSizeDiv.classList.add('order-size')
+  orderSizeDiv.classList.add('order-size');
   orderSize = orderSize/1000000
-  orderSizeDiv.innerHTML = orderSize.toFixed(3);
-
+  if (side == 'sell') {
+    orderSizeDiv.innerHTML = orderSize.toFixed(3);
+  } else if (side == 'buy') {
+    orderSizeDiv.innerHTML = (orderSize/price*100).toFixed(3);
+  }
+  
   rowDiv.appendChild(priceDiv);
   rowDiv.appendChild(orderSizeDiv);
 
@@ -319,14 +326,14 @@ function updateOB(sellOB, buyOB) {
 
   for (let i=0; i<sellOB.length; i++) {
     if (sellOB[i][1] > 0) {
-      sellOBDiv.appendChild(initOBRow(sellOB[i][0], sellOB[i][1]));
+      sellOBDiv.appendChild(initOBRow(sellOB[i][0], sellOB[i][1], 'sell'));
       // update lowestPrice
       if (lowestSellPrice > sellOB[i][0]) {
         lowestSellPrice = sellOB[i][0];
       }
     }
     if (buyOB[i][1] > 0) {
-      buyOBDiv.appendChild(initOBRow(buyOB[i][0], buyOB[i][1]));
+      buyOBDiv.appendChild(initOBRow(buyOB[i][0], buyOB[i][1], 'buy'));
       if (highestBuyPrice < buyOB[i][0]) {
         highestBuyPrice = buyOB[i][0];
       }
@@ -373,11 +380,20 @@ async function initActiveOrderRow(order, side) {
   let sizeDiv = document.createElement("div");
   sizeDiv.classList.add('three');
   const size = (parseInt(order[2]._hex, 16)/1000000).toFixed(3);
-  sizeDiv.innerHTML = size;
+  if (side == 'buy') {
+    sizeDiv.innerHTML = (size/price).toFixed(3);
+  } else if (side == 'sell') {
+    sizeDiv.innerHTML = size;
+  }
+  
 
   let valueDiv = document.createElement("div");
   valueDiv.classList.add('four');
-  valueDiv.innerHTML = (price * size).toFixed(2);
+  if (side == 'buy') {
+    valueDiv.innerHTML = (size*1).toFixed(2);
+  } else if (side == 'sell') {
+    valueDiv.innerHTML = (price * size).toFixed(2);
+  }
 
   let actionDiv = document.createElement("div");
   actionDiv.classList.add('five');
@@ -448,7 +464,7 @@ async function userCanSpendUSDb() {
  * @param {boolean} userCanSpend: true if Exchange contract can spend USDb
  */
 async function initApproveBuyButton(userCanSpend) {
-  if (userCanSpend) return; // TODO, add event listener for the actual button
+  if (userCanSpend) return;
   buyButton.innerHTML = 'Approve USDb';
   buyButton.addEventListener('click', approveUSD);
 }
@@ -482,7 +498,7 @@ async function userCanSpendETH() {
  * @param {boolean} userCanSpend: true if Exchange contract can spend ETH
  */
 async function initApproveSellButton(userCanSpend) {
-  if (userCanSpend) return; // TODO, add event listener for the actual button
+  if (userCanSpend) return;
   sellButton.innerHTML = 'Approve ETH';
   sellButton.addEventListener('click', approveETH);
 }
@@ -515,4 +531,74 @@ function disableUserInput() {
   usdSize.disabled = true;
   limitPrice.disabled = true;
   feeValue.innerHTML = '-';
+}
+
+/**
+ * Makes a new buy order.
+ * Checks if PVnode for that price exist; if not, creates one. 
+ */
+async function buyHandler() {
+  // empty input validation
+  if (ethSize.value == '' || usdSize.value == '' || limitPrice.value == '') return false;
+  
+  // check if PVnode for the limit price already exist
+  const orderbooks = await fetchOB();
+  const orderbook = orderbooks[0];
+  let index;
+  let _limitPrice = Math.round(limitPrice.value*100);
+  let doesPVnodeExist = false;
+  for (let i=0; i<orderbook.length; i++) {
+    if (orderbook[i][0] == _limitPrice) {
+      doesPVnodeExist = true;
+      index = i;
+      break;
+    };
+  }
+
+  if (!doesPVnodeExist) {
+    const tx = await ExchangeContractWithSigner.initPVnode(_limitPrice);
+    buyButton.innerHTML = 'Loading...';
+    await tx.wait()
+    buyButton.innerHTML = 'Please confirm again';
+    index = orderbook.length;
+  }
+
+  // make new buy order
+  await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 10000,index);
+  buyButton.innerHTML = 'Buy ETH';
+}
+
+/**
+ * Makes a new sell order.
+ * Checks if PVnode for that price exist; if not, creates one. 
+ */
+async function sellHandler() {
+  // empty input validation
+  if (ethSize.value == '' || usdSize.value == '' || limitPrice.value == '') return false;
+  
+  // check if PVnode for the limit price already exist
+  const orderbooks = await fetchOB();
+  const orderbook = orderbooks[0];
+  let index;
+  let _limitPrice = Math.round(limitPrice.value*100);
+  let doesPVnodeExist = false;
+  for (let i=0; i<orderbook.length; i++) {
+    if (orderbook[i][0] == _limitPrice) {
+      doesPVnodeExist = true;
+      index = i;
+      break;
+    };
+  }
+
+  if (!doesPVnodeExist) {
+    const tx = await ExchangeContractWithSigner.initPVnode(_limitPrice);
+    sellButton.innerHTML = 'Loading...';
+    await tx.wait()
+    sellButton.innerHTML = 'Please confirm again';
+    index = orderbook.length;
+  }
+
+  // make new sell order
+  await ExchangeContractWithSigner.newSellOrder(_limitPrice, ethSize.value * 1000000, index);
+  sellButton.innerHTML = 'Sell ETH';
 }
