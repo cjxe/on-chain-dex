@@ -1,8 +1,11 @@
 // Variables
-let userAddress, provider;
+let userAddress, provider, signer;
 let inputFlag;
 let ExchangeABI, ExchangeContract;
 let AggregatorV3InterfaceABI, EthereumPriceOracleContract;
+let USDbABI, USDbContract, USDbWithSigner;
+let ETHABI, ETHContract, ETHWithSigner;
+
 
 // Elements
 const connectWalletButton = document.getElementById("button-connect-wallet");
@@ -15,6 +18,7 @@ const buyButton = document.getElementById('buy-button');
 const sellButton = document.getElementById('sell-button');
 const blockNumberValue = document.getElementById('block-number-value');
 
+
 // Event listeners
 document.addEventListener("DOMContentLoaded", onLoad);
 connectWalletButton.addEventListener('click', connectWithMetamask);
@@ -25,6 +29,7 @@ buyButton.addEventListener('mouseover', buyMouseoverHandler);
 buyButton.addEventListener('mouseleave', buyMouseleaveHandler);
 sellButton.addEventListener('mouseover', sellMouseoverHandler);
 sellButton.addEventListener('mouseleave', sellMouseleaveHandler);
+ethereum.on('accountsChanged', () => location.reload());
 
 
 // Functions
@@ -36,10 +41,11 @@ sellButton.addEventListener('mouseleave', sellMouseleaveHandler);
 async function onLoad() {
   if (typeof window.ethereum !== 'undefined') {
     console.log('MetaMask is installed.');
-    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    provider = new ethers.providers.Web3Provider(window.ethereum);
     const connected = await isMetamaskConnected();
     if (connected) {
       showAddress();
+      signer = provider.getSigner();
       isRinkeby();
 
       // init Exchange contract
@@ -52,15 +58,27 @@ async function onLoad() {
       AggregatorV3InterfaceABI = await AggregatorV3InterfaceABI.json();
       EthereumPriceOracleContract = new ethers.Contract('0x8A753747A1Fa494EC906cE90E9f37563A8AF630e', AggregatorV3InterfaceABI, provider);
 
-      // TODO
-      // - [ ] check if tokenA is approved. If not: change button to approve tokenA
-      // - [ ] check if tokenB is approved. Same as above for tokenB
-      // load eth and usd balance as placeholder
+      // check if USDb is approved
+      USDbABI = await fetch('./abi/USDb_ABI.json');
+      USDbABI = await USDbABI.json();
+      USDbContract = new ethers.Contract('0xF2DF8FBB35c7D837aA7866353989E15A094400e4', USDbABI, provider);
+      USDbWithSigner = USDbContract.connect(signer);
+      const canSpendUSDb = await userCanSpendUSDb();
+      await initApproveBuyButton(canSpendUSDb);
+
+      // check if ETH is approved
+      ETHABI = await fetch('./abi/USDb_ABI.json');
+      ETHABI = await ETHABI.json();
+      ETHContract = new ethers.Contract('0x20c5c72bEE10051f923c3cFAbd744F0618b4B41f', ETHABI, provider);
+      ETHWithSigner = ETHContract.connect(signer);
+      const canSpendETH = await userCanSpendETH();
+      await initApproveSellButton(canSpendETH);
     }
 
     provider.on('block', async (blockNumber) => {
       console.log(blockNumber);
       updateBlockNumber(blockNumber);
+      if (!connected) return false;
 
       // fetch and update the order book (OB)
       let orderbooks = await fetchOB();
@@ -410,4 +428,72 @@ async function updateActiveOrders() {
 async function updatePriceOracle() {
   const priceOracleValue = document.getElementById('price-oracle-value');
   priceOracleValue.innerHTML = '$' + (parseInt((await EthereumPriceOracleContract.latestAnswer())._hex, 16)/100000000).toFixed(2);
+}
+
+/**
+ * Check if Exchange contract can spend user address's USDb
+ * @returns {boolean}
+ */
+async function userCanSpendUSDb() {
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0'))._hex, 16);
+  if (allowance > 1000000000000) return true;
+  return false;
+}
+
+/**
+ * Initialise "Approve USDb" button
+ * @param {boolean} userCanSpend: true if Exchange contract can spend USDb
+ */
+async function initApproveBuyButton(userCanSpend) {
+  if (userCanSpend) return; // TODO, add event listener for the actual button
+  buyButton.innerHTML = 'Approve USDb';
+  buyButton.addEventListener('click', approveUSD);
+}
+
+/**
+ * Make the approve-usdb-button ready to make a write call for Exchange 
+ *  contract to be able to spend user's USDb.
+ */
+async function approveUSD() {
+  const tx = await USDbWithSigner.approve('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  buyButton.innerHTML = 'Approving...';
+  const receipt = await tx.wait();
+  if (receipt.status == 1) {
+    buyButton.innerHTML = 'Buy ETH';
+    buyButton.removeEventListener('click', approveUSD);
+  }
+}
+
+/**
+ * Check if Exchange contract can spend user address's ETH
+ * @returns {boolean}
+ */
+async function userCanSpendETH() {
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0'))._hex, 16);
+  if (allowance > 1000000000000) return true;
+  return false;
+}
+
+/**
+ * Initialise "Approve ETH" button
+ * @param {boolean} userCanSpend: true if Exchange contract can spend ETH
+ */
+async function initApproveSellButton(userCanSpend) {
+  if (userCanSpend) return; // TODO, add event listener for the actual button
+  sellButton.innerHTML = 'Approve ETH';
+  sellButton.addEventListener('click', approveETH);
+}
+
+/**
+ * Make the approve-eth-button ready to make a write call for Exchange 
+ *  contract to be able to spend user's ETH.
+ */
+async function approveETH() {
+  const tx = await ETHWithSigner.approve('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  sellButton.innerHTML = 'Approving...';
+  const receipt = await tx.wait();
+  if (receipt.status == 1) {
+    sellButton.innerHTML = 'Sell ETH';
+    sellButton.removeEventListener('click', approveETH);
+  }
 }
