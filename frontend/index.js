@@ -32,6 +32,7 @@ sellButton.addEventListener('mouseover', sellMouseoverHandler);
 sellButton.addEventListener('mouseleave', sellMouseleaveHandler);
 sellButton.addEventListener('click', sellHandler);
 ethereum.on('accountsChanged', () => location.reload());
+ethereum.on('chainChanged', () => location.reload());
 
 
 // Functions
@@ -359,7 +360,7 @@ function updateOB(sellOB, buyOB) {
  * @param {String} side: 'buy' or 'sell'
  * @returns {Element}: A <div> that is a buy-row.
  */
-async function initActiveOrderRow(order, side) {
+async function initActiveOrderRow(order, side, priceIdx) {
   let rowDiv = document.createElement("div");
   rowDiv.classList.add('row', 'value-cell-vertical');
 
@@ -387,7 +388,6 @@ async function initActiveOrderRow(order, side) {
     sizeDiv.innerHTML = size;
   }
   
-
   let valueDiv = document.createElement("div");
   valueDiv.classList.add('four');
   if (side == 'buy') {
@@ -396,14 +396,22 @@ async function initActiveOrderRow(order, side) {
     valueDiv.innerHTML = Math.trunc(price * actualSize*100)/100;
   }
 
+  // cancel button
   let actionDiv = document.createElement("div");
   actionDiv.classList.add('five');
-
-  // TODO
-  // add functionality (tx data (data[0])) to cancel
   let cancelButton = document.createElement("button");
   cancelButton.classList.add('sell-price', 'cancel-button');
   cancelButton.innerHTML = 'Cancel';
+  if (side == 'buy') {
+    cancelButton.addEventListener('click', async () => {
+      await ExchangeContractWithSigner.deleteBuyOrder(order[1], order[0], priceIdx);
+    });
+  } else if (side == 'sell') {
+    cancelButton.addEventListener('click', async () => {
+      await ExchangeContractWithSigner.deleteSellOrder(order[1], order[0], priceIdx);
+    });
+  }
+
   actionDiv.appendChild(cancelButton);
 
   rowDiv.appendChild(sideDiv);
@@ -423,16 +431,33 @@ async function updateActiveOrders() {
   const activeBuyOrders = await ExchangeContract.activeBuyOrders({from:userAddress});
   const activeSellOrders = await ExchangeContract.activeSellOrders({from:userAddress});
 
+  // get priceIdx
+  const orderbooks = await fetchOB();
+  const orderbook = orderbooks[0];
+  let priceIdx;
+
   // init main component
   let mainDiv = document.createElement("div");
   mainDiv.id = 'active-orders-main';
 
   for (let i=0; i<activeBuyOrders.length; i++) {
-    mainDiv.appendChild(await initActiveOrderRow(activeBuyOrders[i], 'buy'));
+    for (let j=0; j<orderbook.length; j++) {
+      if (orderbook[j][0] == activeBuyOrders[i][1]) {
+        priceIdx = j;
+        break;
+      };
+    }
+    mainDiv.appendChild(await initActiveOrderRow(activeBuyOrders[i], 'buy', priceIdx));
   }
 
   for (let i=0; i<activeSellOrders.length; i++) {
-    mainDiv.appendChild(await initActiveOrderRow(activeSellOrders[i], 'sell'));
+    for (let j=0; j<orderbook.length; j++) {
+      if (orderbook[j][0] == activeSellOrders[i][1]) {
+        priceIdx = j;
+        break;
+      };
+    }
+    mainDiv.appendChild(await initActiveOrderRow(activeSellOrders[i], 'sell', priceIdx));
   }
 
   let currentTable = document.getElementById('active-orders-main');
