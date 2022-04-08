@@ -94,9 +94,8 @@ async function onLoad() {
       updatePriceOracle();
     });
 
-
   } else {
-    alert('Please install MetaMask!');
+    toastr["error"](`<a href='https://metamask.io/' target="_blank">Please install MetaMask by clicking here</a>`, "MetaMask is not installed");
   }
 }
 
@@ -116,7 +115,7 @@ async function isMetamaskConnected() {
 async function isRinkeby() {
   const network = await provider.getNetwork();
   if (network.chainId != 4) {
-    alert('Please switch the nework to "Rinkeby".')
+    toastr["error"](`Please switch the nework to "Rinkeby Test Network".`, "Wrong network");
     return false;
   }
   return true;
@@ -404,11 +403,25 @@ async function initActiveOrderRow(order, side, priceIdx) {
   cancelButton.innerHTML = 'Cancel';
   if (side == 'buy') {
     cancelButton.addEventListener('click', async () => {
-      await ExchangeContractWithSigner.deleteBuyOrder(order[1], order[0], priceIdx);
+      const tx = await ExchangeContractWithSigner.deleteBuyOrder(order[1], order[0], priceIdx);
+      toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Cancelling the buy order...");
+      const receipt = await tx.wait();
+      if (receipt.status == 1) {
+        toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully cancelled the buy order");
+      } else {
+        toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to cancel the buy order");
+      }
     });
   } else if (side == 'sell') {
     cancelButton.addEventListener('click', async () => {
-      await ExchangeContractWithSigner.deleteSellOrder(order[1], order[0], priceIdx);
+      const tx = await ExchangeContractWithSigner.deleteSellOrder(order[1], order[0], priceIdx);
+      toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Cancelling the sell order...");
+      const receipt = await tx.wait();
+      if (receipt.status == 1) {
+        toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully cancelled the sell order");
+      } else {
+        toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to cancel the sell order");
+      }
     });
   }
 
@@ -502,10 +515,14 @@ async function initApproveBuyButton(userCanSpend) {
 async function approveUSD() {
   const tx = await USDbWithSigner.approve('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   buyButton.innerHTML = 'Approving...';
+  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving USDb...");
   const receipt = await tx.wait();
   if (receipt.status == 1) {
+    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully approved USDb");
     buyButton.innerHTML = 'Buy ETH';
     buyButton.removeEventListener('click', approveUSD);
+  } else {
+    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to approve USDb");
   }
 }
 
@@ -536,10 +553,14 @@ async function initApproveSellButton(userCanSpend) {
 async function approveETH() {
   const tx = await ETHWithSigner.approve('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   sellButton.innerHTML = 'Approving...';
+  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving ETH...");
   const receipt = await tx.wait();
   if (receipt.status == 1) {
+    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully approved ETH");
     sellButton.innerHTML = 'Sell ETH';
     sellButton.removeEventListener('click', approveETH);
+  } else {
+    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to approve ETH");
   }
 }
 
@@ -584,14 +605,23 @@ async function buyHandler() {
   if (!doesPVnodeExist) {
     const tx = await ExchangeContractWithSigner.initPVnode(_limitPrice);
     buyButton.innerHTML = 'Loading...';
-    await tx.wait()
+    toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> This is needed when an order for this price has never been placed.`, "Initialising a price index...");
+    await tx.wait();
+    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> Please confirm the second transaction. This is for placing the order.`, "Successfully initialised a price node");
     buyButton.innerHTML = 'Please confirm again';
     index = orderbook.length;
   }
 
   // make new buy order
-  await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 10000,index);
+  const tx = await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 10000,index);
   buyButton.innerHTML = 'Buy ETH';
+  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new buy order...");
+  const receipt = await tx.wait();
+  if (receipt.status == 1) {
+    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new buy order");
+  } else {
+    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new buy order");
+  }
 }
 
 /**
@@ -619,12 +649,38 @@ async function sellHandler() {
   if (!doesPVnodeExist) {
     const tx = await ExchangeContractWithSigner.initPVnode(_limitPrice);
     sellButton.innerHTML = 'Loading...';
-    await tx.wait()
+    toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> This is needed when an order for this price has never been placed.`, "Initialising a price index...");
+    await tx.wait();
+    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> Please confirm the second transaction. This is for placing the order.`, "Successfully initialised a price node");
     sellButton.innerHTML = 'Please confirm again';
     index = orderbook.length;
   }
 
   // make new sell order
-  await ExchangeContractWithSigner.newSellOrder(_limitPrice, ethSize.value * 1000000, index);
+  const tx = await ExchangeContractWithSigner.newSellOrder(_limitPrice, ethSize.value * 1000000, index);
   sellButton.innerHTML = 'Sell ETH';
+  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new sell order...");
+  const receipt = await tx.wait();
+  if (receipt.status == 1) {
+    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new sell order");
+  } else {
+    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new sell order");
+  }
+}
+
+toastr.options = {
+  "closeButton": true,
+  "debug": false,
+  "newestOnTop": false,
+  "progressBar": true,
+  "positionClass": "toast-bottom-right",
+  "preventDuplicates": false,
+  "showDuration": "300",
+  "hideDuration": "1000",
+  "timeOut": "5000",
+  "extendedTimeOut": "1000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
 }
