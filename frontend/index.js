@@ -53,7 +53,7 @@ async function onLoad() {
       // init Exchange contract
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
       ExchangeABI = await ExchangeABI.json();
-      ExchangeContract = new ethers.Contract('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', ExchangeABI, provider);
+      ExchangeContract = new ethers.Contract('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', ExchangeABI, provider);
       ExchangeContractWithSigner = ExchangeContract.connect(signer);
 
       // init Price oracle contract
@@ -266,9 +266,9 @@ function initOBRow(price, orderSize, side) {
   orderSizeDiv.classList.add('order-size');
   orderSize = orderSize/1000000
   if (side == 'sell') {
-    orderSizeDiv.innerHTML = orderSize.toFixed(3);
+    orderSizeDiv.innerHTML = Math.trunc(orderSize*1000)/1000;
   } else if (side == 'buy') {
-    orderSizeDiv.innerHTML = (orderSize/price*100).toFixed(3);
+    orderSizeDiv.innerHTML = Math.trunc(orderSize/price*100*1000)/1000;
   }
   
   rowDiv.appendChild(priceDiv);
@@ -379,9 +379,10 @@ async function initActiveOrderRow(order, side) {
 
   let sizeDiv = document.createElement("div");
   sizeDiv.classList.add('three');
-  const size = (parseInt(order[2]._hex, 16)/1000000).toFixed(3);
+  const actualSize = (parseInt(order[2]._hex, 16)/1000000);
+  const size = Math.trunc((parseInt(order[2]._hex, 16)/1000000)*1000)/1000;
   if (side == 'buy') {
-    sizeDiv.innerHTML = (size/price).toFixed(3);
+    sizeDiv.innerHTML = Math.trunc(actualSize/price*1000)/1000;
   } else if (side == 'sell') {
     sizeDiv.innerHTML = size;
   }
@@ -390,9 +391,9 @@ async function initActiveOrderRow(order, side) {
   let valueDiv = document.createElement("div");
   valueDiv.classList.add('four');
   if (side == 'buy') {
-    valueDiv.innerHTML = (size*1).toFixed(2);
+    valueDiv.innerHTML = (actualSize*1).toFixed(2);
   } else if (side == 'sell') {
-    valueDiv.innerHTML = (price * size).toFixed(2);
+    valueDiv.innerHTML = Math.trunc(price * actualSize*100)/100;
   }
 
   let actionDiv = document.createElement("div");
@@ -454,7 +455,7 @@ async function updatePriceOracle() {
  * @returns {boolean}
  */
 async function userCanSpendUSDb() {
-  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0'))._hex, 16);
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b'))._hex, 16);
   if (allowance > 1000000000000) return true;
   return false;
 }
@@ -474,7 +475,7 @@ async function initApproveBuyButton(userCanSpend) {
  *  contract to be able to spend user's USDb.
  */
 async function approveUSD() {
-  const tx = await USDbWithSigner.approve('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  const tx = await USDbWithSigner.approve('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   buyButton.innerHTML = 'Approving...';
   const receipt = await tx.wait();
   if (receipt.status == 1) {
@@ -488,7 +489,7 @@ async function approveUSD() {
  * @returns {boolean}
  */
 async function userCanSpendETH() {
-  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0'))._hex, 16);
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b'))._hex, 16);
   if (allowance > 1000000000000) return true;
   return false;
 }
@@ -508,7 +509,7 @@ async function initApproveSellButton(userCanSpend) {
  *  contract to be able to spend user's ETH.
  */
 async function approveETH() {
-  const tx = await ETHWithSigner.approve('0x049Dd1d63f5e8c90d92dc8AFa3CEa7403A8bEeF0', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  const tx = await ETHWithSigner.approve('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   sellButton.innerHTML = 'Approving...';
   const receipt = await tx.wait();
   if (receipt.status == 1) {
