@@ -594,9 +594,13 @@ function disableUserInput() {
  * Checks if PVnode for that price exist; if not, creates one. 
  */
 async function buyHandler() {
-  // empty input validation
+  // validation
   if (ethSize.value == '' || usdSize.value == '' || limitPrice.value == '') return false;
-  
+  if (ethSize.value < 0.002) {
+    toastr["error"](`Min. buy size is 0.002 ETH`, "ETH buy amount is too small");
+    return false;
+  }
+
   // check if PVnode for the limit price already exist
   const orderbooks = await fetchOB();
   const orderbook = orderbooks[0];
@@ -638,8 +642,12 @@ async function buyHandler() {
  * Checks if PVnode for that price exist; if not, creates one. 
  */
 async function sellHandler() {
-  // empty input validation
+  // validation
   if (ethSize.value == '' || usdSize.value == '' || limitPrice.value == '') return false;
+  if (ethSize.value < 0.002) {
+    toastr["error"](`Min. sell size is 0.002 ETH`, "ETH sell amount is too small");
+    return false;
+  }
   
   // check if PVnode for the limit price already exist
   const orderbooks = await fetchOB();
