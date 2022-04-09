@@ -17,6 +17,7 @@ const totalValue = document.getElementById('total-value');
 const buyButton = document.getElementById('buy-button');
 const sellButton = document.getElementById('sell-button');
 const blockNumberValue = document.getElementById('block-number-value');
+const pairWrapperDiv = document.querySelector('.left');
 
 
 // Event listeners
@@ -31,6 +32,7 @@ buyButton.addEventListener('click', buyHandler);
 sellButton.addEventListener('mouseover', sellMouseoverHandler);
 sellButton.addEventListener('mouseleave', sellMouseleaveHandler);
 sellButton.addEventListener('click', sellHandler);
+pairWrapperDiv.addEventListener('click', pairWrapperHandler);
 ethereum.on('accountsChanged', () => location.reload());
 ethereum.on('chainChanged', () => location.reload());
 
@@ -148,6 +150,7 @@ async function showAddress() {
  * A flag named `inputFlag` helps #limit-price change when input event fires.
  */
 function ethInputHandler() {
+  inputValidator(ethSize, 3);
   inputFlag = 'eth';
   if (!(Number(limitPrice.value) > 0) && (Number(usdSize.value) > 0)) {
     usdSize.value = '';
@@ -163,6 +166,7 @@ function ethInputHandler() {
  * A flag named `inputFlag` helps #limit-price change when input event fires.
  */
 function usdInputHandler() {
+  inputValidator(usdSize, 2);
   inputFlag = 'usd';
   if (!(Number(limitPrice.value) > 0) && (Number(ethSize.value) > 0)) {
     ethSize.value = '';
@@ -177,6 +181,7 @@ function usdInputHandler() {
  * Updates #eth-size OR #usd-size depending on `inputFlag`.
  */
 function limitInputHandler() {
+  inputValidator(limitPrice, 2);
   if (inputFlag == 'eth') {
     let usdValue = Number(ethSize.value) * Number(limitPrice.value);
     usdValue = Math.round(usdValue * 100)/100;
@@ -261,6 +266,10 @@ function initOBRow(price, orderSize, side) {
   let priceDiv = document.createElement("div");
   priceDiv.classList.add('price');
   priceDiv.innerHTML = (price/100).toFixed(2);
+  rowDiv.addEventListener('click', () => {
+    limitPrice.value = priceDiv.innerHTML;
+    limitInputHandler();
+  });
 
   let orderSizeDiv = document.createElement("div");
   orderSizeDiv.classList.add('order-size');
@@ -666,6 +675,28 @@ async function sellHandler() {
   } else {
     toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new sell order");
   }
+}
+
+/**
+ * Activated when a "select a market" dropdown is clicked. 
+ * TODO:
+ * - [ ] Dropdown box
+ */
+function pairWrapperHandler() {
+  toastr["warning"](``, "More markets are coming soon");
+}
+
+/**
+ * Validates size and limit price inputs. Makes sure the decimal point is
+ *  restricted to a certain length.
+ * @param {Node.ELEMENT_NODE} inputElement: Input element which is validated.
+ * @param {Number} numOfDecimalPoints: Number of decimal points to show.
+ */
+function inputValidator(inputElement, numOfDecimalPoints) {
+  let t = inputElement.value;
+  inputElement.value = (t.indexOf(".") >= 0) ? (t.substr(0, t.indexOf(".")) + t.substr(t.indexOf("."), numOfDecimalPoints + 1)) : t;
+  t = inputElement.value;
+  inputElement.value = (t.indexOf(",") >= 0) ? (t.substr(0, t.indexOf(",")) + t.substr(t.indexOf(","), numOfDecimalPoints + 1)) : t;
 }
 
 toastr.options = {

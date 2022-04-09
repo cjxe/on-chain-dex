@@ -12,7 +12,6 @@
   <header class="navbar">
     <div class="navbar-header-wrapper">
       <a class="navbar-header-selected navbar-header" href="/trade">Trade</a>
-      <a class="navbar-header-not-selected navbar-header" href="/pool">Pool</a>
     </div>
     <button id="button-connect-wallet" class="button-valid button-connect-wallet">Connect MetaMask</button>
   </header>
@@ -48,11 +47,11 @@
               <p class="label-user-input">Size</p>
               <div class="inputs">
                 <div class="input-wrapper" id="eth-inpur-wrapper">
-                  <input id="eth-size" type="number" class="user-input-entered" placeholder="0.000">
+                  <input id="eth-size" type="tel" class="user-input-entered" placeholder="0.000">
                   <p class="label-currency currency-next-to-size">ETH</p>
                 </div>
                 <div class="input-wrapper">
-                  <input id="usd-size" type="number" class="user-input-entered" placeholder="0.00">
+                  <input id="usd-size" type="tel" class="user-input-entered" placeholder="0.00">
                   <p class="label-currency currency-next-to-size">USD</p>
                 </div>
               </div>
@@ -61,7 +60,7 @@
               <p class="label-user-input">Limit price</p>
               <div class="inputs">
                 <div class="input-wrapper">
-                  <input id="limit-price" type="number" inputmode="decimal" class="user-input-entered" placeholder="0.00">
+                  <input id="limit-price" type="tel" inputmode="decimal" class="user-input-entered" placeholder="0.00">
                   <p class="label-currency currency-next-to-size">USD</p>
                 </div>
               </div>
@@ -90,8 +89,8 @@
         <p class="title-selected">Orderbook</p>
         <div class="orderbook-wrapper">
           <div class="header header-cell-vertical">
-            <div class="one">Price (USD)</div>
-            <div class="two">Size</div>
+            <div class="one">Limit Price (USD)</div>
+            <div class="two">Size (ETH)</div>
           </div>
           <div id="ob-table" class="main">
             <div class="sell-ob sell-price">
