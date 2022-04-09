@@ -201,8 +201,12 @@ function limitInputHandler() {
 function buyMouseoverHandler() {
   if (Number(limitPrice.value) > 0 && (Number(ethSize.value) > 0)) {
     const fee = Math.round(usdSize.value * 1)/1000;
+    if (usdSize.value < 1) {
+      feeValue.innerHTML = '<0.001' + ' USD';
+    } else {
+      feeValue.innerHTML = fee.toLocaleString() + ' USD';
+    }
     const total = usdSize.value - fee;
-    feeValue.innerHTML = fee.toLocaleString() + ' USD';
     totalValue.innerHTML = total.toLocaleString() + ' USD';
   }
 }
@@ -214,9 +218,13 @@ function buyMouseoverHandler() {
 function sellMouseoverHandler() {
   if (Number(limitPrice.value) > 0 && (Number(ethSize.value) > 0)) {
     const fee = (ethSize.value * 1)/1000;
+    if (ethSize.value <= 0.1) {
+      feeValue.innerHTML = '<0.001' + ' ETH';
+    } else {
+      feeValue.innerHTML = fee.toLocaleString() + ' ETH';
+    } 
     const total = ethSize.value - fee;
-    feeValue.innerHTML = fee + ' ETH';
-    totalValue.innerHTML = total + ' ETH';
+    totalValue.innerHTML = total.toLocaleString() + ' ETH';
   }
 }
 
@@ -658,9 +666,11 @@ async function buyHandler() {
 
   // make new buy order
   const tx = await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 1000000,index);
+  buyMouseoverHandler();
   buyButton.innerHTML = 'Buy ETH';
   toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new buy order...");
   const receipt = await tx.wait();
+  buyMouseleaveHandler();
   if (receipt.status == 1) {
     toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new buy order");
   } else {
@@ -706,9 +716,11 @@ async function sellHandler() {
 
   // make new sell order
   const tx = await ExchangeContractWithSigner.newSellOrder(_limitPrice, ethSize.value * 1000000, index);
+  sellMouseoverHandler();
   sellButton.innerHTML = 'Sell ETH';
   toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new sell order...");
   const receipt = await tx.wait();
+  sellMouseleaveHandler();
   if (receipt.status == 1) {
     toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new sell order");
   } else {
