@@ -97,6 +97,7 @@ async function onLoad() {
     });
 
   } else {
+    disableUserInput();
     toastr["error"](`<a href='https://metamask.io/' target="_blank">Please install MetaMask by clicking here</a>`, "MetaMask is not installed");
   }
 }
