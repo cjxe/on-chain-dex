@@ -350,22 +350,41 @@ function updateOB(sellOB, buyOB) {
   buyOBDiv.classList.add('buy-ob', 'buy-price');
   let highestBuyPrice = -Number.MAX_VALUE;
 
+  // order sellOB and buyOB by price
+  let sellOBarr = [], buyOBarr = [];
   for (let i=0; i<sellOB.length; i++) {
     if (sellOB[i][1] > 0) {
-      sellOBDiv.appendChild(initOBRow(sellOB[i][0], sellOB[i][1], 'sell'));
+      sellOBarr.push({'price': sellOB[i][0], 'size': sellOB[i][1]});
       // update lowestPrice
       if (lowestSellPrice > sellOB[i][0]) {
         lowestSellPrice = sellOB[i][0];
       }
     }
     if (buyOB[i][1] > 0) {
-      buyOBDiv.appendChild(initOBRow(buyOB[i][0], buyOB[i][1], 'buy'));
+      buyOBarr.push({'price': buyOB[i][0], 'size': buyOB[i][1]});
       if (highestBuyPrice < buyOB[i][0]) {
         highestBuyPrice = buyOB[i][0];
       }
     }
   }
+  
+  // max # to show is 20
+  sellOBarr.sort(sortByPriceAsc);
+  sellOBarr = sellOBarr.slice(0, 20)
+  buyOBarr.sort(sortByPriceDes);
+  buyOBarr = buyOBarr.slice(0, 20)
 
+  // build final buyOB and sellOB
+  for (let i=0; i<sellOBarr.length; i++) {
+    sellOBDiv.appendChild(initOBRow(sellOBarr[i].price, sellOBarr[i].size, 'sell'));
+  }
+
+  for (let i=0; i<buyOBarr.length; i++) {
+    
+    buyOBDiv.appendChild(initOBRow(buyOBarr[i].price, buyOBarr[i].size, 'buy'));
+  }
+
+  // init spread bar
   let spread;
   if ((highestBuyPrice == -Number.MAX_VALUE) || (lowestSellPrice == Number.MAX_VALUE)) {
     spread = '-';
@@ -415,13 +434,13 @@ async function initActiveOrderRow(order, side, priceIdx) {
   const size = Math.trunc((parseInt(order[2]._hex, 16)/1000000)*1000)/1000;
   if (side == 'buy') {
     if ((parseInt(order[2]._hex, 16)/price) < 1000) {
-      sizeDiv.innerHTML = '0.001>';
+      sizeDiv.innerHTML = '<0.001';
     } else {
       sizeDiv.innerHTML = Math.trunc(actualSize/price*1000)/1000;
     }
   } else if (side == 'sell') {
     if (parseInt(order[2]._hex, 16) < 1000) {
-      sizeDiv.innerHTML = '0.001>';
+      sizeDiv.innerHTML = '<0.001';
     } else {
       sizeDiv.innerHTML = size;
     }
@@ -431,13 +450,13 @@ async function initActiveOrderRow(order, side, priceIdx) {
   valueDiv.classList.add('four');
   if (side == 'buy') {
     if (actualSize < 0.01) {
-      valueDiv.innerHTML = '0.01>';
+      valueDiv.innerHTML = '<0.01';
     } else {
       valueDiv.innerHTML = Math.trunc(actualSize*100)/100;
     }
   } else if (side == 'sell') {
     if ((price * actualSize) < 0.01) {
-      valueDiv.innerHTML = '0.01>';
+      valueDiv.innerHTML = '<0.01';
     } else {
       valueDiv.innerHTML = Math.trunc(price * actualSize*100)/100;
     }
@@ -748,6 +767,19 @@ function inputValidator(inputElement, numOfDecimalPoints) {
   inputElement.value = (t.indexOf(".") >= 0) ? (t.substr(0, t.indexOf(".")) + t.substr(t.indexOf("."), numOfDecimalPoints + 1)) : t;
   t = inputElement.value;
   inputElement.value = (t.indexOf(",") >= 0) ? (t.substr(0, t.indexOf(",")) + t.substr(t.indexOf(","), numOfDecimalPoints + 1)) : t;
+}
+
+/**
+ * Sorts array of objects both by ascending and descending order.
+ * https://stackoverflow.com/a/979278/12959962
+ * @param {Object} a: First object element of the array.
+ * @param {Object} b: Second object element of the array.
+ */
+function sortByPriceAsc(a, b) {
+  return parseFloat(a.price) - parseFloat(b.price);
+}
+function sortByPriceDes(a, b) {
+  return parseFloat(b.price) - parseFloat(a.price);
 }
 
 toastr.options = {
