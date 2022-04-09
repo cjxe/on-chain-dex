@@ -613,7 +613,7 @@ async function buyHandler() {
   }
 
   // make new buy order
-  const tx = await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 10000,index);
+  const tx = await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 1000000,index);
   buyButton.innerHTML = 'Buy ETH';
   toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new buy order...");
   const receipt = await tx.wait();

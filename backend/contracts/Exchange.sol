@@ -109,7 +109,7 @@ contract Exchange is Ownable {
 
             if (sellAmount == 0) {
                 return true;
-            } else if (price * sellAmount >= buyAmount) {
+            } else if ((price * sellAmount) / 100 >= buyAmount) {
                 // sell amount >= buy amount
                 LinkedListLib.Order memory o = orderBook[tokenB][price]
                     .nodes[head_]
@@ -119,28 +119,28 @@ contract Exchange is Ownable {
                 PVNodeLib._subVolume(buyOB, priceIdx, o.amount);
 
                 deposits[o.seller][tokenB] -= o.amount;
-                deposits[msg.sender][tokenA] -= o.amount / price;
+                deposits[msg.sender][tokenA] -= (o.amount / price) * 100;
                 IUSDb(tokenB).transfer(msg.sender, o.amount);
-                IUSDb(tokenA).transfer(o.seller, o.amount / price);
-                sellAmount -= o.amount / price;
-            } else if (buyAmount > price * sellAmount) {
+                IUSDb(tokenA).transfer(o.seller, (o.amount / price) * 100);
+                sellAmount -= (o.amount / price) * 100;
+            } else if (buyAmount > (price * sellAmount) / 100) {
                 LinkedListLib.Order memory o = orderBook[tokenB][price]
                     .nodes[head_]
                     .order;
                 orderBook[tokenB][price].nodes[head_].order.amount -=
-                    price *
-                    sellAmount;
+                    (price *
+                    sellAmount) / 100;
                 OPVSetLib._subVolume(
                     _buyOrders,
                     o.seller,
                     head_,
-                    price * sellAmount
+                    (price * sellAmount) / 100
                 );
-                PVNodeLib._subVolume(buyOB, priceIdx, price * sellAmount);
+                PVNodeLib._subVolume(buyOB, priceIdx, (price * sellAmount) / 100);
 
-                deposits[o.seller][tokenB] -= price * sellAmount;
+                deposits[o.seller][tokenB] -= (price * sellAmount) / 100;
                 deposits[msg.sender][tokenA] -= sellAmount;
-                IUSDb(tokenB).transfer(msg.sender, price * sellAmount);
+                IUSDb(tokenB).transfer(msg.sender, (price * sellAmount) / 100);
                 IUSDb(tokenA).transfer(o.seller, sellAmount);
                 sellAmount = 0;
             }
@@ -237,8 +237,8 @@ contract Exchange is Ownable {
         );
 
 		// no fee under 1000
-        deposit(tokenB, price * buyAmount);
-        uint256 currentFee = price * (buyAmount * (1000-feeRate)) / 1000;
+        deposit(tokenB, (price * buyAmount) / 100);
+        uint256 currentFee = (price * (buyAmount * (1000-feeRate)) / 1000) / 100;
         tokenBaccumulatedFee += currentFee;
         deposits[msg.sender][tokenB] -= currentFee;
         buyAmount -= (buyAmount * (1000-feeRate)) / 1000;
@@ -263,9 +263,9 @@ contract Exchange is Ownable {
                 PVNodeLib._subVolume(sellOB, priceIdx, o.amount);
 
                 deposits[o.seller][tokenA] -= o.amount;
-                deposits[msg.sender][tokenB] -= price * o.amount;
+                deposits[msg.sender][tokenB] -= (price * o.amount) / 100;
                 IUSDb(tokenA).transfer(msg.sender, o.amount);
-                IUSDb(tokenB).transfer(o.seller, price * o.amount);
+                IUSDb(tokenB).transfer(o.seller, (price * o.amount) / 100);
                 buyAmount -= o.amount;
             } else if (sellAmount > buyAmount) {
                 LinkedListLib.Order memory o = orderBook[tokenA][price]
@@ -276,9 +276,9 @@ contract Exchange is Ownable {
                 PVNodeLib._subVolume(sellOB, priceIdx, buyAmount);
 
                 deposits[o.seller][tokenA] -= buyAmount;
-                deposits[msg.sender][tokenB] -= price * buyAmount;
+                deposits[msg.sender][tokenB] -= (price * buyAmount) / 100;
                 IUSDb(tokenA).transfer(msg.sender, buyAmount);
-                IUSDb(tokenB).transfer(o.seller, price * buyAmount);
+                IUSDb(tokenB).transfer(o.seller, (price * buyAmount) / 100);
                 buyAmount = 0;
             }
         }
@@ -287,30 +287,30 @@ contract Exchange is Ownable {
             bytes32 orderId = LinkedListLib.initHead(
                 orderBook[tokenB][price],
                 msg.sender,
-                price * buyAmount
+                (price * buyAmount) / 100
             );
             OPVSetLib._add(
                 _buyOrders,
                 msg.sender,
                 orderId,
                 price,
-                price * buyAmount
+                (price * buyAmount) / 100
             );
-            PVNodeLib._addVolume(buyOB, priceIdx, price * buyAmount);
+            PVNodeLib._addVolume(buyOB, priceIdx, (price * buyAmount) / 100);
         } else if (buyAmount > 0) {
             bytes32 orderId = LinkedListLib.addNode(
                 orderBook[tokenB][price],
                 msg.sender,
-                price * buyAmount
+                (price * buyAmount) / 100
             );
             OPVSetLib._add(
                 _buyOrders,
                 msg.sender,
                 orderId,
                 price,
-                price * buyAmount
+                (price * buyAmount) / 100
             );
-            PVNodeLib._addVolume(buyOB, priceIdx, price * buyAmount);
+            PVNodeLib._addVolume(buyOB, priceIdx, (price * buyAmount) / 100);
         }
 
         return true;
@@ -402,9 +402,6 @@ contract Exchange is Ownable {
             }
         }
         revert("Price is not in the array");
-        // TODO in front-end
-        // run this everytime before making new order
-        // if this function returns an error, initiate initPVnode(price)
     }
     // sellOB + buyOB functions end here
 
