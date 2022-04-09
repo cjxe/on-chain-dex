@@ -276,9 +276,17 @@ function initOBRow(price, orderSize, side) {
   orderSizeDiv.classList.add('order-size');
   orderSize = orderSize/1000000
   if (side == 'sell') {
-    orderSizeDiv.innerHTML = Math.trunc(orderSize*1000)/1000;
+    if (orderSize < 0.001) { 
+      orderSizeDiv.innerHTML = '<0.001';
+    } else {
+      orderSizeDiv.innerHTML = Math.trunc(orderSize*1000)/1000;
+    }
   } else if (side == 'buy') {
-    orderSizeDiv.innerHTML = Math.trunc(orderSize/price*100*1000)/1000;
+    if (orderSize/price*100 < 0.001) {
+      orderSizeDiv.innerHTML = '<0.001';
+    } else {
+      orderSizeDiv.innerHTML = Math.trunc(orderSize/price*100*1000)/1000;
+    }
   }
   
   rowDiv.appendChild(priceDiv);
@@ -350,7 +358,13 @@ function updateOB(sellOB, buyOB) {
     }
   }
 
-  const midBarDiv = initOBMidBar((lowestSellPrice - highestBuyPrice)/100);
+  let spread;
+  if ((highestBuyPrice == -Number.MAX_VALUE) || (lowestSellPrice == Number.MAX_VALUE)) {
+    spread = '-';
+  } else {
+    spread = (lowestSellPrice - highestBuyPrice)/100;
+  }
+  const midBarDiv = initOBMidBar(spread);
 
   OBDiv.appendChild(sellOBDiv);
   OBDiv.appendChild(midBarDiv);
@@ -392,17 +406,33 @@ async function initActiveOrderRow(order, side, priceIdx) {
   const actualSize = (parseInt(order[2]._hex, 16)/1000000);
   const size = Math.trunc((parseInt(order[2]._hex, 16)/1000000)*1000)/1000;
   if (side == 'buy') {
-    sizeDiv.innerHTML = Math.trunc(actualSize/price*1000)/1000;
+    if ((parseInt(order[2]._hex, 16)/price) < 1000) {
+      sizeDiv.innerHTML = '0.001>';
+    } else {
+      sizeDiv.innerHTML = Math.trunc(actualSize/price*1000)/1000;
+    }
   } else if (side == 'sell') {
-    sizeDiv.innerHTML = size;
+    if (parseInt(order[2]._hex, 16) < 1000) {
+      sizeDiv.innerHTML = '0.001>';
+    } else {
+      sizeDiv.innerHTML = size;
+    }
   }
   
   let valueDiv = document.createElement("div");
   valueDiv.classList.add('four');
   if (side == 'buy') {
-    valueDiv.innerHTML = (actualSize*1).toFixed(2);
+    if (actualSize < 0.01) {
+      valueDiv.innerHTML = '0.01>';
+    } else {
+      valueDiv.innerHTML = Math.trunc(actualSize*100)/100;
+    }
   } else if (side == 'sell') {
-    valueDiv.innerHTML = Math.trunc(price * actualSize*100)/100;
+    if ((price * actualSize) < 0.01) {
+      valueDiv.innerHTML = '0.01>';
+    } else {
+      valueDiv.innerHTML = Math.trunc(price * actualSize*100)/100;
+    }
   }
 
   // cancel button
