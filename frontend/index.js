@@ -54,7 +54,7 @@ async function onLoad() {
       // init Exchange contract
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
       ExchangeABI = await ExchangeABI.json();
-      ExchangeContract = new ethers.Contract('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', ExchangeABI, provider);
+      ExchangeContract = new ethers.Contract('0x2551B4246b6F25212A576d48f610b7e7b204DD42', ExchangeABI, provider);
       ExchangeContractWithSigner = ExchangeContract.connect(signer);
 
       // init Price oracle contract
@@ -493,7 +493,7 @@ async function updatePriceOracle() {
  * @returns {boolean}
  */
 async function userCanSpendUSDb() {
-  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b'))._hex, 16);
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x2551B4246b6F25212A576d48f610b7e7b204DD42'))._hex, 16);
   if (allowance > 1000000000000) return true;
   return false;
 }
@@ -513,7 +513,7 @@ async function initApproveBuyButton(userCanSpend) {
  *  contract to be able to spend user's USDb.
  */
 async function approveUSD() {
-  const tx = await USDbWithSigner.approve('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  const tx = await USDbWithSigner.approve('0x2551B4246b6F25212A576d48f610b7e7b204DD42', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   buyButton.innerHTML = 'Approving...';
   toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving USDb...");
   const receipt = await tx.wait();
@@ -531,7 +531,7 @@ async function approveUSD() {
  * @returns {boolean}
  */
 async function userCanSpendETH() {
-  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b'))._hex, 16);
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x2551B4246b6F25212A576d48f610b7e7b204DD42'))._hex, 16);
   if (allowance > 1000000000000) return true;
   return false;
 }
@@ -551,7 +551,7 @@ async function initApproveSellButton(userCanSpend) {
  *  contract to be able to spend user's ETH.
  */
 async function approveETH() {
-  const tx = await ETHWithSigner.approve('0xBa46c2353fDd9cD075e4dc4bC9a0FA5Ef3112C4b', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  const tx = await ETHWithSigner.approve('0x2551B4246b6F25212A576d48f610b7e7b204DD42', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   sellButton.innerHTML = 'Approving...';
   toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving ETH...");
   const receipt = await tx.wait();
