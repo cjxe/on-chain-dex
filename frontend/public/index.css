@@ -129,6 +129,9 @@ html {
   color: var(--color-text-base);
   margin: 0px 0px 4px 2px;
   user-select: none;
+
+  display: flex;
+  align-items: center;
 }
 
 .top-bar-value {
@@ -366,8 +369,7 @@ html {
 }
 
 .main-item-right > .orderbook-wrapper > .main .row:hover {
-  background-color: var(--color-layer-lightest);
-  border: 2px dashed var(--color-border)
+  background-color: var(--color-layer-lighter);
 }
 
 .main-item-right > .orderbook-wrapper > .main > .mid-bar {
@@ -619,4 +621,12 @@ input[type=tel] {
   border-radius: 8px;
   background-color: var(--color-layer-lighter);
   cursor:pointer;
+}
+
+.question-circle-icon { 
+  height: 12px;
+  width: 12px;
+  filter: invert(87%) sepia(6%) saturate(461%) hue-rotate(204deg) brightness(90%) contrast(89%);
+  margin-left: 5px;
+  cursor: pointer;
 }
