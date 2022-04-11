@@ -134,6 +134,10 @@ html {
   align-items: center;
 }
 
+.label-user-input > .label-user-input-text {
+  margin-right: 5px;
+}
+
 .top-bar-value {
   font-size: 14px;
   font-weight: 400;
@@ -627,6 +631,44 @@ input[type=tel] {
   height: 12px;
   width: 12px;
   filter: invert(87%) sepia(6%) saturate(461%) hue-rotate(204deg) brightness(90%) contrast(89%);
-  margin-left: 5px;
   cursor: pointer;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 116px;
+  background-color: var(--color-layer-lighter);
+  color: var(--color-text-light);
+  font-weight: 400;
+  text-align: center;
+  border-radius: 8px;
+  padding: 8px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -58px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--color-border) transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
 }
