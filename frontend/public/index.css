@@ -281,6 +281,22 @@ html {
     flex-direction: column;
     align-items: center;
   }
+
+  .active-orders-table-wrapper > div {
+    grid-area: div;
+    overflow: auto;
+    height: 171px;
+    border-radius: 8px;
+  }
+
+  .cancel-button {
+    height: 30px;
+    width: 80px;
+    border: 0px;
+    border-radius: 8px;
+    background-color: var(--color-layer-lighter);
+    cursor:pointer;
+  }
 }
 
 @media only screen and (max-width: 850px) {
@@ -319,6 +335,22 @@ html {
     display: flex;
     flex-direction: column;
     align-items: center;
+  }
+
+  .active-orders-table-wrapper > div {
+    grid-area: div;
+    overflow: auto;
+    height: 289px;
+    border-radius: 8px;
+  }
+
+  .cancel-button {
+    height: 30px;
+    width: 65px;
+    border: 0px;
+    border-radius: 8px;
+    background-color: var(--color-layer-lighter);
+    cursor:pointer;
   }
 }
 
@@ -603,13 +635,6 @@ input[type=tel] {
   grid-area: header;
 }
 
-.active-orders-table-wrapper > div {
-  grid-area: div;
-  overflow: auto;
-  height: 171px;
-  border-radius: 8px;
-}
-
 .active-orders-table-wrapper > .header {
   display: flex;
   flex-direction: row;
@@ -657,15 +682,6 @@ input[type=tel] {
   padding: 0px 24px;
   min-height: 40px;
   border-bottom: 1px solid var(--color-border);
-}
-
-.cancel-button {
-  height: 30px;
-  width: 80px;
-  border: 0px;
-  border-radius: 8px;
-  background-color: var(--color-layer-lighter);
-  cursor:pointer;
 }
 
 .question-circle-icon { 
