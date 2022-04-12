@@ -273,6 +273,13 @@ html {
     margin: 0px 16px 0px 0px;
   }
 
+  .top-bar-item > .left > .select-market-wrapper > img {
+    height: 22px;
+    width: 22px;
+    margin: 0px 0px 3px 4px;
+    filter: invert(45%) sepia(8%) saturate(863%) hue-rotate(204deg) brightness(94%) contrast(86%);
+  }
+
   .bottom-main {
     grid-column-start: 1;
     grid-column-end: 3;
@@ -314,10 +321,8 @@ html {
     grid-template-rows: 80px 400px 440px 380px;
   }
 
-  .top-bar-item {
-    display: flex;
-    flex-direction: row;
-    margin: 0px 16px 0px 0px;
+  #select-a-market { 
+    display: none;
   }
   
   .top-bar-item {
@@ -326,6 +331,12 @@ html {
     display: flex;
     flex-direction: row;
     margin: 0px 16px 0px 0px;
+  }
+
+  .top-bar-item > .left > .select-market-wrapper > img {
+    height: 22px;
+    width: 22px;
+    filter: invert(45%) sepia(8%) saturate(863%) hue-rotate(204deg) brightness(94%) contrast(86%);
   }
 
   .bottom-main {
@@ -378,13 +389,6 @@ html {
 .top-bar-item > .left > .select-market-wrapper {
   display: flex;
   align-items: center;
-}
-
-.top-bar-item > .left > .select-market-wrapper > img {
-  height: 22px;
-  width: 22px;
-  margin: 0px 0px 3px 4px;
-  filter: invert(45%) sepia(8%) saturate(863%) hue-rotate(204deg) brightness(94%) contrast(86%);
 }
 
 .top-bar-item > .right {
