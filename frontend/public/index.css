@@ -248,28 +248,78 @@ html {
   cursor: pointer;
 }
 
-.main-wrapper {
-  padding: 24px;
-  display: flex;
-  justify-content: center; /* Horizontally align inside */
-  align-items: center; /* Vertically align inside */
-  background-color: var(--color-layer-base);
+@media only screen and (min-width: 850px) {
+  .main-wrapper {
+    padding: 24px;
+    display: flex;
+    justify-content: center; /* Horizontally align inside */
+    align-items: center; /* Vertically align inside */
+    background-color: var(--color-layer-base);
+  }
+  
+  .container {
+    height: 100%;
+    width: 760px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 56px 440px 280px;
+  }
+
+  .top-bar-item {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    display: flex;
+    flex-direction: row;
+    margin: 0px 16px 0px 0px;
+  }
+
+  .bottom-main {
+    grid-column-start: 1;
+    grid-column-end: 3;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
-.container {
-  height: 100%;
-  width: 760px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 56px 440px 280px;
-}
+@media only screen and (max-width: 850px) {
+  .main-wrapper {
+    padding-top: 4px;
+    display: flex;
+    justify-content: center; /* Horizontally align inside */
+    background-color: var(--color-layer-base);
+  }
 
-.top-bar-item {
-  grid-column-start: 1;
-  grid-column-end: 3;
-  display: flex;
-  flex-direction: row;
-  margin: 0px 16px 0px 0px;
+  .container {
+    width: 850px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 80px 400px 440px 380px;
+  }
+
+  .top-bar-item {
+    display: flex;
+    flex-direction: row;
+    margin: 0px 16px 0px 0px;
+  }
+  
+  .top-bar-item {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    display: flex;
+    flex-direction: row;
+    margin: 0px 16px 0px 0px;
+  }
+
+  .bottom-main {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 .top-bar-item > .left {
@@ -537,15 +587,6 @@ input[type=tel] {
 
 .navbar-header-wrapper > a:hover {
   color: var(--color-text-base);
-}
-
-.bottom-main {
-  grid-column-start: 1;
-  grid-column-end: 3;
-  padding-top: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .active-orders-table-wrapper {
