@@ -623,29 +623,29 @@ input[type=tel] {
 
 /* side */
 .active-orders-table-wrapper .one {
-  width: 45px;
+  width: 6%;
   flex-grow: 1;
 }
 
 /* price */
 .active-orders-table-wrapper .two {
-  width: 90px;
+  width: 12%;
   flex-grow: 1;
 }
 
 /* size */
 .active-orders-table-wrapper .three {
-  width: 90px;
+  width: 12%;
   flex-grow: 1;
 }
 
 .active-orders-table-wrapper .four {
-  width: 120px;
+  width: 16%;
   flex-grow: 1;
 }
 
 .active-orders-table-wrapper .five {
-  width: 30px;
+  width: 4%;
   text-align: center; 
   flex-grow: 1;
 }
