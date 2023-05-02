@@ -137,12 +137,12 @@ describe("Deploy ETH, USDb, and Factory smart contracts", function () {
     const buyPrice = 50;
     const buyAmount = 2;
 
-    await ExchangeContract.connect(addr2).newBuyOrder(50, 2, 0);
+    await ExchangeContract.connect(addr2).newBuyOrder(buyPrice, buyAmount, 0);
 
-    console.log(await ETHContract.balanceOf(addr2.address))
-    console.log(await USDbContract.balanceOf(addr2.address))
-    console.log(await ETHContract.balanceOf(addr1.address))
-    console.log(await USDbContract.balanceOf(addr1.address))
+    // console.log(await ETHContract.balanceOf(addr2.address))
+    // console.log(await USDbContract.balanceOf(addr2.address))
+    // console.log(await ETHContract.balanceOf(addr1.address))
+    // console.log(await USDbContract.balanceOf(addr1.address))
 
 
 
