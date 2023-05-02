@@ -11,7 +11,7 @@
 
 ## Description
 
-<!-- ! image here -->
+![desktop-view](/docs/desktop-view.png)
 
 This project (on-chain-dex) is a web application that allows traders to trade cryptocurrencies on central limit order books (CLOB) by calling smart contracts hosted on the Ethereum test network (Sepolia). For more detail, read [the project report](/report/Project_Report.pdf).
 

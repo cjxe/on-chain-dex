@@ -56,7 +56,7 @@ async function onLoad() {
       // init Exchange contract
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
       ExchangeABI = await ExchangeABI.json();
-      ExchangeContract = new ethers.Contract('0x2551B4246b6F25212A576d48f610b7e7b204DD42', ExchangeABI, provider);
+      ExchangeContract = new ethers.Contract('0xA11aC55dca0f39fF51eEc03A6E63A3De34B13f7B', ExchangeABI, provider);
       ExchangeContractWithSigner = ExchangeContract.connect(signer);
 
       // init Price oracle contract
@@ -67,7 +67,7 @@ async function onLoad() {
       // check if USDb is approved
       USDbABI = await fetch('./abi/USDb_ABI.json');
       USDbABI = await USDbABI.json();
-      USDbContract = new ethers.Contract('0xF2DF8FBB35c7D837aA7866353989E15A094400e4', USDbABI, provider);
+      USDbContract = new ethers.Contract('0xc4FcD839C4C584684e346dBfE1ed2817f8A7bCF7', USDbABI, provider);
       USDbWithSigner = USDbContract.connect(signer);
       const canSpendUSDb = await userCanSpendUSDb();
       await initApproveBuyButton(canSpendUSDb);
@@ -75,7 +75,7 @@ async function onLoad() {
       // check if ETH is approved
       ETHABI = await fetch('./abi/USDb_ABI.json');
       ETHABI = await ETHABI.json();
-      ETHContract = new ethers.Contract('0x20c5c72bEE10051f923c3cFAbd744F0618b4B41f', ETHABI, provider);
+      ETHContract = new ethers.Contract('0x5234D63caF31AF1871f40D77C47E7744DF732336', ETHABI, provider);
       ETHWithSigner = ETHContract.connect(signer);
       const canSpendETH = await userCanSpendETH();
       await initApproveSellButton(canSpendETH);
@@ -560,7 +560,7 @@ async function updatePriceOracle() {
  * @returns {boolean}
  */
 async function userCanSpendUSDb() {
-  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x2551B4246b6F25212A576d48f610b7e7b204DD42'))._hex, 16);
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0xA11aC55dca0f39fF51eEc03A6E63A3De34B13f7B'))._hex, 16);
   if (allowance > 1000000000000) return true;
   return false;
 }
@@ -580,7 +580,7 @@ async function initApproveBuyButton(userCanSpend) {
  *  contract to be able to spend user's USDb.
  */
 async function approveUSD() {
-  const tx = await USDbWithSigner.approve('0x2551B4246b6F25212A576d48f610b7e7b204DD42', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  const tx = await USDbWithSigner.approve('0xA11aC55dca0f39fF51eEc03A6E63A3De34B13f7B', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   buyButton.innerHTML = 'Approving...';
   toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving USDb...");
   const receipt = await tx.wait();
@@ -598,7 +598,7 @@ async function approveUSD() {
  * @returns {boolean}
  */
 async function userCanSpendETH() {
-  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0x2551B4246b6F25212A576d48f610b7e7b204DD42'))._hex, 16);
+  const allowance = parseInt((await USDbContract.getAllowance(userAddress, '0xA11aC55dca0f39fF51eEc03A6E63A3De34B13f7B'))._hex, 16);
   if (allowance > 1000000000000) return true;
   return false;
 }
@@ -618,7 +618,7 @@ async function initApproveSellButton(userCanSpend) {
  *  contract to be able to spend user's ETH.
  */
 async function approveETH() {
-  const tx = await ETHWithSigner.approve('0x2551B4246b6F25212A576d48f610b7e7b204DD42', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
+  const tx = await ETHWithSigner.approve('0xA11aC55dca0f39fF51eEc03A6E63A3De34B13f7B', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   sellButton.innerHTML = 'Approving...';
   toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving ETH...");
   const receipt = await tx.wait();
