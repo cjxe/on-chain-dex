@@ -2,7 +2,7 @@
 // ref: https://etherscan.io/address/0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f/advanced#code
 pragma solidity ^0.8.11;
 
-import "backend/contracts/Exchange.sol";
+import "./Exchange.sol";
 
 contract Factory {
     mapping(address => mapping(address => address)) public getPair;

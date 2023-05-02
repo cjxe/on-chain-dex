@@ -19,11 +19,11 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  defaultNetwork: "rinkeby",
+  defaultNetwork: "sepolia",
   networks: {
-    rinkeby: {
-      url: process.env.HTTPS_RINKEBY_ENDPOINT,
-      accounts: [process.env.PRIVATE_KEY]
+    sepolia: {
+      url: process.env.HTTPS_SEPOLIA_ENDPOINT,
+      accounts: [process.env.WALLET_PRIVATE_KEY_1, process.env.WALLET_PRIVATE_KEY_2, process.env.WALLET_PRIVATE_KEY_3]
     }
   },
   solidity: {

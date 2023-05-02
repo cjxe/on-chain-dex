@@ -2,10 +2,10 @@
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "backend/contracts/IUSDb.sol";
-import {LinkedListLib} from "backend/contracts/LinkedList.sol";
-import {OPVSetLib} from "backend/contracts/OPVSet.sol";
-import {PVNodeLib} from "backend/contracts/PVNode.sol";
+import "./IUSDb.sol";
+import {LinkedListLib} from "./LinkedList.sol";
+import {OPVSetLib} from "./OPVSet.sol";
+import {PVNodeLib} from "./PVNode.sol";
 
 contract Exchange is Ownable {
     address public factory;

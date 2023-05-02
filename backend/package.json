@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test-local": "npx hardhat compile && npx hardhat test --network localhost",
+    "test-sepolia": "npx hardhat compile && npx hardhat test --network sepolia",
+    "clean": "npx hardhat clean"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.2",

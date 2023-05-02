@@ -51,7 +51,7 @@ async function onLoad() {
     if (connected) {
       showAddress();
       signer = provider.getSigner();
-      isRinkeby();
+      isSepolia();
 
       // init Exchange contract
       ExchangeABI = await fetch('./abi/Exchange_ABI.json');
@@ -112,13 +112,13 @@ async function isMetamaskConnected() {
 }
 
 /**
- * Checks if MM's network is Rinkeby.
+ * Checks if MM's network is Sepolia.
  * @return {boolean}
  */
-async function isRinkeby() {
+async function isSepolia() {
   const network = await provider.getNetwork();
-  if (network.chainId != 4) {
-    toastr["error"](`Please switch the nework to "Rinkeby Test Network".`, "Wrong network");
+  if (network.chainId != 11155111) {
+    toastr["error"](`Please switch the nework to "Sepolia Test Network".`, "Wrong network");
     return false;
   }
   return true;
@@ -128,8 +128,8 @@ async function isRinkeby() {
  * Launches a MetaMask popup to allow users to connect their wallet.
  */
 async function connectWithMetamask() {
-  const connectedToRinkeby = await isRinkeby();
-  if (!connectedToRinkeby) {
+  const connectedToSepolia = await isSepolia();
+  if (!connectedToSepolia) {
     return false;
   }
   const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -471,23 +471,23 @@ async function initActiveOrderRow(order, side, priceIdx) {
   if (side == 'buy') {
     cancelButton.addEventListener('click', async () => {
       const tx = await ExchangeContractWithSigner.deleteBuyOrder(order[1], order[0], priceIdx);
-      toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Cancelling the buy order...");
+      toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Cancelling the buy order...");
       const receipt = await tx.wait();
       if (receipt.status == 1) {
-        toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully cancelled the buy order");
+        toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully cancelled the buy order");
       } else {
-        toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to cancel the buy order");
+        toastr["error"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to cancel the buy order");
       }
     });
   } else if (side == 'sell') {
     cancelButton.addEventListener('click', async () => {
       const tx = await ExchangeContractWithSigner.deleteSellOrder(order[1], order[0], priceIdx);
-      toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Cancelling the sell order...");
+      toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Cancelling the sell order...");
       const receipt = await tx.wait();
       if (receipt.status == 1) {
-        toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully cancelled the sell order");
+        toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully cancelled the sell order");
       } else {
-        toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to cancel the sell order");
+        toastr["error"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to cancel the sell order");
       }
     });
   }
@@ -582,14 +582,14 @@ async function initApproveBuyButton(userCanSpend) {
 async function approveUSD() {
   const tx = await USDbWithSigner.approve('0x2551B4246b6F25212A576d48f610b7e7b204DD42', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   buyButton.innerHTML = 'Approving...';
-  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving USDb...");
+  toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving USDb...");
   const receipt = await tx.wait();
   if (receipt.status == 1) {
-    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully approved USDb");
+    toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully approved USDb");
     buyButton.innerHTML = 'Buy ETH';
     buyButton.removeEventListener('click', approveUSD);
   } else {
-    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to approve USDb");
+    toastr["error"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to approve USDb");
   }
 }
 
@@ -620,14 +620,14 @@ async function initApproveSellButton(userCanSpend) {
 async function approveETH() {
   const tx = await ETHWithSigner.approve('0x2551B4246b6F25212A576d48f610b7e7b204DD42', '115792089237316195423570985008687907853269984665640564039457584007913129639935');
   sellButton.innerHTML = 'Approving...';
-  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving ETH...");
+  toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Approving ETH...");
   const receipt = await tx.wait();
   if (receipt.status == 1) {
-    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully approved ETH");
+    toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully approved ETH");
     sellButton.innerHTML = 'Sell ETH';
     sellButton.removeEventListener('click', approveETH);
   } else {
-    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to approve ETH");
+    toastr["error"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to approve ETH");
   }
 }
 
@@ -676,9 +676,9 @@ async function buyHandler() {
   if (!doesPVnodeExist) {
     const tx = await ExchangeContractWithSigner.initPVnode(_limitPrice);
     buyButton.innerHTML = 'Loading...';
-    toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> This is needed when an order for this price has never been placed.`, "Initialising a price index...");
+    toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> This is needed when an order for this price has never been placed.`, "Initialising a price index...");
     await tx.wait();
-    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> Please confirm the second transaction. This is for placing the order.`, "Successfully initialised a price node");
+    toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> Please confirm the second transaction. This is for placing the order.`, "Successfully initialised a price node");
     buyButton.innerHTML = 'Please confirm again';
     index = orderbook.length;
   }
@@ -687,13 +687,13 @@ async function buyHandler() {
   const tx = await ExchangeContractWithSigner.newBuyOrder(_limitPrice, ethSize.value * 1000000,index);
   buyMouseoverHandler();
   buyButton.innerHTML = 'Buy ETH';
-  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new buy order...");
+  toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new buy order...");
   const receipt = await tx.wait();
   buyMouseleaveHandler();
   if (receipt.status == 1) {
-    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new buy order");
+    toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new buy order");
   } else {
-    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new buy order");
+    toastr["error"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new buy order");
   }
 }
 
@@ -726,9 +726,9 @@ async function sellHandler() {
   if (!doesPVnodeExist) {
     const tx = await ExchangeContractWithSigner.initPVnode(_limitPrice);
     sellButton.innerHTML = 'Loading...';
-    toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> This is needed when an order for this price has never been placed.`, "Initialising a price index...");
+    toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> This is needed when an order for this price has never been placed.`, "Initialising a price index...");
     await tx.wait();
-    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> Please confirm the second transaction. This is for placing the order.`, "Successfully initialised a price node");
+    toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a></br> Please confirm the second transaction. This is for placing the order.`, "Successfully initialised a price node");
     sellButton.innerHTML = 'Please confirm again';
     index = orderbook.length;
   }
@@ -737,13 +737,13 @@ async function sellHandler() {
   const tx = await ExchangeContractWithSigner.newSellOrder(_limitPrice, ethSize.value * 1000000, index);
   sellMouseoverHandler();
   sellButton.innerHTML = 'Sell ETH';
-  toastr["info"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new sell order...");
+  toastr["info"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Placing a new sell order...");
   const receipt = await tx.wait();
   sellMouseleaveHandler();
   if (receipt.status == 1) {
-    toastr["success"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new sell order");
+    toastr["success"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Successfully placed a new sell order");
   } else {
-    toastr["error"](`<a href='https://rinkeby.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new sell order");
+    toastr["error"](`<a href='https://sepolia.etherscan.io/tx/${tx.hash}' target="_blank">Click here for the etherscan link</a>`, "Failed to place a new sell order");
   }
 }
 

@@ -1,0 +1,15 @@
+{
+  "files.exclude": {
+    "LICENSE": true,
+    "report": true,
+    "frontend/public/index.css": true,
+    "frontend/public/images": true,
+    "backend/package-lock.json": true,
+    "backend/.gitignore": true,
+    ".gitignore": true,
+    ".vscode": true,
+    "backend/cache": true,
+    "backend/artifacts": true,
+    "backend/node_modules": true
+  }
+}
