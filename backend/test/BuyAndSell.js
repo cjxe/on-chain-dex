@@ -97,6 +97,18 @@ describe("Deploy ETH, USDb, and Factory smart contracts", function () {
     expect(await USDbContract.balanceOf(addr2.address)).to.equal(0);
   });
 
+  // ! when testing, check in the following order:
+  // ETH (sell) - addr1
+  // USDb (buy) - addr1
+  // ETH (sell) - addr2
+  // USDb (buy) - addr2
+  // getPVobs
+  // getDeposits 
+  // activeSellOrders
+  // activeBuyOrders
+  // getAllSellOrders
+  // Orderbook
+
   it ("Fully match a sell order", async function () {
     //             SELL 
     //     PRICE (USD)   AMOUNT
@@ -108,7 +120,9 @@ describe("Deploy ETH, USDb, and Factory smart contracts", function () {
     // place the sell order
     const sellPrice = 50;
     const sellAmount = 2;
-    await ExchangeContract.connect(owner).initPVnode(sellPrice);
+    // initialise price-volume node
+    // this is done once per price in some exchange contract
+    await ExchangeContract.connect(owner).initPVnode(sellPrice); 
     const indexOfPrice50 = String(await ExchangeContract.getIndexOfPrice(sellPrice));
 
     await ExchangeContract.connect(addr1).newSellOrder(sellPrice, sellAmount, indexOfPrice50);
@@ -123,31 +137,50 @@ describe("Deploy ETH, USDb, and Factory smart contracts", function () {
 
     let activeSellOrdersByAddr1 = await ExchangeContract.connect(addr1).activeSellOrders();
 
+    expect((await ExchangeContract.getAllSellOrders(sellPrice)).length).to.equal(1);
+    expect((await ExchangeContract.getAllBuyOrders(sellPrice)).length).to.equal(0);
+
     expect((await ExchangeContract.orderBook(ETHContract.address, 50))._length).to.equal(1);
     expect((await ExchangeContract.orderBook(ETHContract.address, 50)).head).to.equal(activeSellOrdersByAddr1[0][0]);
     expect((await ExchangeContract.orderBook(ETHContract.address, 50)).tail).to.equal(activeSellOrdersByAddr1[0][0]);
     expect((await ExchangeContract.orderBook(USDbContract.address, 50))._length).to.equal(0);
     expect((await ExchangeContract.orderBook(USDbContract.address, 50)).head).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
     expect((await ExchangeContract.orderBook(USDbContract.address, 50)).tail).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
-    
-    expect((await ExchangeContract.getAllSellOrders(sellPrice)).length).to.equal(1);
-    
 
     // place the buy order
     const buyPrice = 50;
     const buyAmount = 2;
 
-    await ExchangeContract.connect(addr2).newBuyOrder(buyPrice, buyAmount, 0);
+    await ExchangeContract.connect(addr2).newBuyOrder(50, 2, 0); // ???? / / / // 
 
-    // console.log(await ETHContract.balanceOf(addr2.address))
-    // console.log(await USDbContract.balanceOf(addr2.address))
-    // console.log(await ETHContract.balanceOf(addr1.address))
-    // console.log(await USDbContract.balanceOf(addr1.address))
+    console.log(await ETHContract.balanceOf(addr1.address))
+    console.log(await USDbContract.balanceOf(addr1.address))
+    console.log(await ETHContract.balanceOf(addr2.address))
+    console.log(await USDbContract.balanceOf(addr2.address))
 
+    PVobs50 = String(await ExchangeContract.getPVobs())
+    expect(PVobs50).to.equal('50,0,50,0')
 
+    expect(await ExchangeContract.getDeposits(addr1.address, ETHContract.address)).to.equal(0);
+    expect(await ExchangeContract.getDeposits(addr1.address, USDbContract.address)).to.equal(0);
+    expect(await ExchangeContract.getDeposits(addr2.address, ETHContract.address)).to.equal(0);
+    expect(await ExchangeContract.getDeposits(addr2.address, USDbContract.address)).to.equal(0);
 
-    // expect(await ETHContract.balanceOf(addr2.address)).to.equal(10000 + buyAmount);
-    // expect(await USDbContract.balanceOf(addr2.address)).to.equal(10000 - (buyPrice * buyAmount));
+    expect(String(await ExchangeContract.connect(addr1).activeSellOrders())).to.equal('');
+    expect(String(await ExchangeContract.connect(addr1).activeBuyOrders())).to.equal('');
+    expect(String(await ExchangeContract.connect(addr2).activeSellOrders())).to.equal('');
+    expect(String(await ExchangeContract.connect(addr2).activeBuyOrders())).to.equal('');
+
+    expect((await ExchangeContract.getAllSellOrders(sellPrice)).length).to.equal(0);
+    expect((await ExchangeContract.getAllBuyOrders(sellPrice)).length).to.equal(0);
+
+    expect((await ExchangeContract.orderBook(ETHContract.address, 50))._length).to.equal(0);
+    expect((await ExchangeContract.orderBook(ETHContract.address, 50)).head).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
+    // the tail points to the last order if the head is empty
+    // expect((await ExchangeContract.orderBook(ETHContract.address, 50)).tail).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
+    expect((await ExchangeContract.orderBook(USDbContract.address, 50))._length).to.equal(0);
+    expect((await ExchangeContract.orderBook(USDbContract.address, 50)).head).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
+    expect((await ExchangeContract.orderBook(USDbContract.address, 50)).tail).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000");
   })
 
 })
